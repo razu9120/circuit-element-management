@@ -20,7 +20,7 @@
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [3000, 3001, 5432]
+  "forwardPorts": [3000, 3001, 5432],
   // "portsAttributes": {
   //   "3000": {
   //     "label": "nestjs-backend",
@@ -36,7 +36,16 @@
   // "postCreateCommand": "docker --version",
 
   // Configure tool-specific properties.
-  // "customizations": {},
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "oderwat.indent-rainbow",
+        "mhutchie.git-graph",
+        "naumovs.color-highlight"
+      ],
+      "settings": {}
+    }
+  }
 
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   // "remoteUser": "root"
