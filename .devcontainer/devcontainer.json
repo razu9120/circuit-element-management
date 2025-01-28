@@ -41,7 +41,8 @@
       "extensions": [
         "oderwat.indent-rainbow",
         "mhutchie.git-graph",
-        "naumovs.color-highlight"
+        "naumovs.color-highlight",
+        "esbenp.prettier-vscode"
       ],
       "settings": {}
     }
