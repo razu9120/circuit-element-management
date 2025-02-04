@@ -15,7 +15,7 @@ const stencilOptions = [
   { value: "stencil-2", label: "あり" },
 ];
 
-const RegistBoardWrapper = () => {
+const RegistBoardClient = () => {
   return (
     <>
       <div className="flex flex-col bg-base-300 rounded-box p-3">
@@ -70,4 +70,4 @@ const RegistBoardWrapper = () => {
   );
 };
 
-export default RegistBoardWrapper;
+export default RegistBoardClient;

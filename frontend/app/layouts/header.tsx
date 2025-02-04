@@ -9,7 +9,7 @@ interface BreadcrumbItem {
   isActive?: boolean;
 }
 
-interface Menu {
+export interface Menu {
   menuId: string;
   menuName: string;
   destination: string;
@@ -19,9 +19,12 @@ interface Menu {
 
 interface HeaderProps {
   menuId: string;
+  setMenuId: React.Dispatch<React.SetStateAction<string>>;
+  items: Menu[];
 }
 
-const Header: React.FC<HeaderProps> = ({ menuId }) => {
+const Header: React.FC<HeaderProps> = ({ setMenuId, items }) => {
+  // const Header: React.FC<HeaderProps> = ({}) => {
   const router = useRouter();
 
   const Redirect = (route: string) => {
@@ -47,9 +50,7 @@ const Header: React.FC<HeaderProps> = ({ menuId }) => {
   //     { label: "基板登録", isActive: true },
   //   ];
 
-  const breadcrumbItems = menu
-    .filter((item) => item.menuId === menuId)
-    .map((item) => item.breadcrumbItems);
+  //   const breadcrumbItems: Menu[] = menu.filter((item) => item.menuId === menuId);
 
   return (
     <div>
@@ -116,7 +117,7 @@ const Header: React.FC<HeaderProps> = ({ menuId }) => {
           </div>
         </div>
       </div>
-      <Breadcrumbs items={breadcrumbItems} />
+      <Breadcrumbs items={items} setMenuId={setMenuId} />
     </div>
   );
 };

@@ -1,9 +1,9 @@
-import RegistBoardWrapper from "@/features/registBoard/registBoardWrapper";
+import RegistBoardClient from "@/features/registBoard/registBoardClient";
 
 const Home = () => {
   return (
     <>
-      <RegistBoardWrapper />
+      <RegistBoardClient />
     </>
   );
 };
