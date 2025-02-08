@@ -1,5 +1,6 @@
 import "./globals.css";
 import NavigationArea from "./layouts/navigationArea";
+import { MenuProvider } from "./contexts/menuContext";
 
 const RootLayout = ({
   children,
@@ -9,10 +10,12 @@ const RootLayout = ({
   return (
     <html lang="en" data-theme="dark">
       <body>
-        <NavigationArea />
-        <main className="absolute inset-0 z-0 mt-[60px] md:mt-[110px] pr-5 pb-5 pl-5">
-          {children}
-        </main>
+        <MenuProvider>
+          <NavigationArea />
+          <main className="absolute inset-0 z-0 mt-[60px] md:mt-[110px] pr-5 pb-5 pl-5">
+            {children}
+          </main>
+        </MenuProvider>
       </body>
     </html>
   );

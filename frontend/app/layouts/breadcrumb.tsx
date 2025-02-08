@@ -1,15 +1,14 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Menu } from "./header";
+import { useMenu } from "../contexts/menuContext";
+import { menu } from "../constants/menu";
 
-interface BreadcrumbsProps {
-  items: Menu[]; // パンくずリストのアイテム配列
-  setMenuId: React.Dispatch<React.SetStateAction<string>>;
-}
-
-const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, setMenuId }) => {
+const Breadcrumbs = () => {
   const router = useRouter();
+  const { menuId, setMenuId } = useMenu();
+
+  const items = menu.filter((item) => item.menuId === menuId);
 
   const Redirect = (route: string | undefined, menuId: string) => {
     if (!route) {
@@ -26,7 +25,6 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, setMenuId }) => {
           .flatMap((menu) =>
             menu.breadcrumbItems.map((item) => ({
               ...item,
-              menuId: menu.menuId,
             }))
           )
           .map((item, index) => (

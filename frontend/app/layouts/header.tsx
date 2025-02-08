@@ -1,7 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { menu } from "../components/menu";
+import { menu } from "../constants/menu";
 import Breadcrumbs from "./breadcrumb";
+import { useMenu } from "../contexts/menuContext";
 
 interface BreadcrumbItem {
   label: string;
@@ -17,15 +18,10 @@ export interface Menu {
   breadcrumbItems: BreadcrumbItem[];
 }
 
-interface HeaderProps {
-  menuId: string;
-  setMenuId: React.Dispatch<React.SetStateAction<string>>;
-  items: Menu[];
-}
-
-const Header: React.FC<HeaderProps> = ({ setMenuId, items }) => {
+const Header = () => {
   // const Header: React.FC<HeaderProps> = ({}) => {
   const router = useRouter();
+  const { setMenuId } = useMenu();
 
   const Redirect = (route: string) => {
     router.push(route);
@@ -37,6 +33,7 @@ const Header: React.FC<HeaderProps> = ({ setMenuId, items }) => {
       <li key={item.menuId} className="h-10">
         <a
           onClick={() => {
+            setMenuId(item.menuId);
             Redirect(item.destination);
           }}
         >
@@ -117,7 +114,7 @@ const Header: React.FC<HeaderProps> = ({ setMenuId, items }) => {
           </div>
         </div>
       </div>
-      <Breadcrumbs items={items} setMenuId={setMenuId} />
+      <Breadcrumbs />
     </div>
   );
 };

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { menu } from "../components/menu";
+import { menu } from "../constants/menu";
+import { useMenu } from "../contexts/menuContext";
 
 interface BreadcrumbItem {
   label: string;
@@ -17,12 +18,9 @@ interface Menu {
   breadcrumbItems: BreadcrumbItem[];
 }
 
-interface SidemenuProps {
-  setMenuId: React.Dispatch<React.SetStateAction<string>>;
-}
-
-const Sidemenu: React.FC<SidemenuProps> = ({ setMenuId }) => {
+const Sidemenu = () => {
   const router = useRouter();
+  const { setMenuId } = useMenu();
 
   const Redirect = (route: string) => {
     router.push(route);
