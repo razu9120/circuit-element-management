@@ -1,12 +1,19 @@
+"use client";
 import Badge from "@/app/components/badge";
+import { useMenu } from "@/app/contexts/menuContext";
 import Link from "next/link";
 
-const boardListClient = () => {
+const BoardListClient = () => {
+  const { setMenuId } = useMenu();
+
   return (
     <>
       <div className="md:flex flex-wrap gap-5">
         <Link
           href="/boardDetail"
+          onClick={() => {
+            setMenuId("003");
+          }}
           className="card bg-base-100 md:w-[463px] mb-5 md:mb-0 shadow-xl cursor-pointer"
         >
           <figure>
@@ -65,4 +72,4 @@ const boardListClient = () => {
   );
 };
 
-export default boardListClient;
+export default BoardListClient;
