@@ -19,7 +19,6 @@ export interface Menu {
 }
 
 const Header = () => {
-  // const Header: React.FC<HeaderProps> = ({}) => {
   const router = useRouter();
   const { setMenuId } = useMenu();
 
@@ -41,13 +40,6 @@ const Header = () => {
         </a>
       </li>
     ));
-
-  //   const breadcrumbItems = [
-  //     { label: "ホーム", path: "/" },
-  //     { label: "基板登録", isActive: true },
-  //   ];
-
-  //   const breadcrumbItems: Menu[] = menu.filter((item) => item.menuId === menuId);
 
   return (
     <div>
@@ -78,6 +70,7 @@ const Header = () => {
           <a
             className="btn btn-ghost text-xl"
             onClick={() => {
+              setMenuId("000");
               Redirect("/");
             }}
           >
