@@ -20,9 +20,12 @@ const RadioButton: React.FC<RadioButtonProps> = ({
   onChange,
 }) => {
   return (
-    <div className="md:flex mb-2">
+    <div className="md:flex md:mt-2 mb-2">
       {options.map((option) => (
-        <label key={option.value} className="label cursor-pointer">
+        <label
+          key={option.value}
+          className="flex items-center gap-2 cursor-pointer mt-1 md:mt-0"
+        >
           <input
             type="radio"
             name={name}
@@ -31,7 +34,7 @@ const RadioButton: React.FC<RadioButtonProps> = ({
             defaultChecked={defaultValue === option.value}
             onChange={(e) => onChange && onChange(e.target.value)}
           />
-          <span className="label-text mr-4 ml-2">{option.label}</span>
+          <span className="label-text mr-4">{option.label}</span>
         </label>
       ))}
     </div>

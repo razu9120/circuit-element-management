@@ -43,7 +43,7 @@ const Header = () => {
 
   return (
     <div>
-      <div className="navbar fixed border border-base-300 h-10 z-20 mr-5 mb-5 ml-5 md:m-0 bottom-0 md:top-0 md:bottom-auto rounded-box md:rounded-none bg-base-100/60 backdrop-blur-sm">
+      <div className="navbar fixed border border-base-300 h-10 z-20 mb-2 md:m-0 bottom-0 md:top-0 md:bottom-auto rounded-box md:rounded-none bg-base-100/60 backdrop-blur-sm">
         <div className="flex-none">
           <div className="drawer-content invisible md:visible">
             <label

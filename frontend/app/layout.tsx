@@ -12,7 +12,7 @@ const RootLayout = ({
       <body>
         <MenuProvider>
           <NavigationArea />
-          <main className="absolute inset-0 z-0 mt-[60px] md:mt-[110px] pr-5 pb-5 pl-5">
+          <main className=" z-0 mt-[60px] md:mt-[110px] mb-[80px] pr-5 pl-5">
             {children}
           </main>
         </MenuProvider>
