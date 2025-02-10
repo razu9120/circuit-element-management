@@ -1,15 +1,5 @@
 export const menu = [
   {
-    menuId: "999",
-    menuName: "テスト",
-    destination: "/test",
-    displayFlg: true,
-    breadcrumbItems: [
-      { label: "ホーム", menuId: "000", path: "/" },
-      { label: "テスト", menuId: "999", isActive: true },
-    ],
-  },
-  {
     menuId: "000",
     menuName: "ホーム",
     destination: "/",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import RadioButton from "@/app/components/radioButton";
 import {
   stencilOptions,
@@ -8,9 +9,16 @@ import {
 } from "../registBoard/registBoardClient";
 import Button from "@/app/components/button";
 import Toggle from "@/app/components/toggle";
+import { useMenu } from "@/app/contexts/menuContext";
 
 const BoardDetailClient = () => {
+  const router = useRouter();
   const [isToggled, setIsToggled] = useState(false);
+  const { setMenuId } = useMenu();
+
+  const Redirect = (route: string) => {
+    router.push(route);
+  };
 
   return (
     <>
@@ -79,7 +87,7 @@ const BoardDetailClient = () => {
         )}
       </div>
       <div className="bg-base-300 rounded-box mt-3 p-3">
-        <h1 className="font-bold bg-base-300 mb-2 sticky top-0 z-10">素子</h1>
+        <h1 className="font-bold bg-base-300 mb-2 sticky top-0 z-5">素子</h1>
         <div className="h-64 md:h-72 lg:h-[465px] overflow-y-auto">
           {Array.from({ length: 10 }).map((_, index) => (
             <div
@@ -98,6 +106,25 @@ const BoardDetailClient = () => {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="flex justify-center mt-3">
+        <Button
+          label="戻る"
+          className="btn btn-outline btn-secondary"
+          onClick={() => {
+            setMenuId("002");
+            Redirect("/boardList");
+          }}
+        />
+        <Button
+          label="基板編集"
+          className="btn btn-primary ml-10 w-32"
+          onClick={() => {
+            setMenuId("004");
+            Redirect("/editBoard");
+          }}
+        />
       </div>
     </>
   );
