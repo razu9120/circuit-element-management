@@ -56,7 +56,7 @@ export const menu = [
     displayFlg: true,
     breadcrumbItems: [
       { label: "ホーム", menuId: "000", path: "/" },
-      { label: "基板登録", menuId: "005", isActive: true },
+      { label: "製品登録", menuId: "005", isActive: true },
     ],
   },
   {
