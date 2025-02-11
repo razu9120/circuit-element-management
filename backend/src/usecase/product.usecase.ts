@@ -1,0 +1,171 @@
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
+import {
+  IProduct,
+  IProductCreate,
+  ProductEntity,
+} from 'src/domain/product.entity';
+
+export interface IProductUseCase {
+  userGetProducts(): Promise<IProduct[]>;
+  userGetProductById(productId: string): Promise<IProduct>;
+  userCreateProduct(productCreate: IProductCreate): Promise<IProduct>;
+  userUpdateProduct(product: IProduct): Promise<IProduct>;
+  userDeleteProduct(productId: string): Promise<IProduct>;
+}
+
+@Injectable()
+export class ProductUseCase {
+  constructor(
+    @Inject(ProductEntity)
+    private readonly productEntity: ProductEntity,
+  ) {}
+
+  async userGetProducts(): Promise<IProduct[]> {
+    try {
+      console.log('usecase');
+      const result = await this.productEntity.getAllProducts();
+      return result;
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: e.message,
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Unknown error occurred',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async userGetProductById(productId: string): Promise<IProduct> {
+    try {
+      const result = await this.productEntity.getProductById(productId);
+      return result;
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: e.message,
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Unknown error occurred',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async userCreateProduct(productCreate: IProductCreate): Promise<IProduct> {
+    const { productName, dataSheetPath } = productCreate;
+
+    if (!productName || !dataSheetPath) {
+      throw new BadRequestException('Name and price are required');
+    }
+    try {
+      const newProduct = this.productEntity.newProduct(
+        productName,
+        dataSheetPath,
+      );
+
+      const result = await this.productEntity.createProduct(newProduct);
+      return result;
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: e.message,
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Unknown error occurred',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async userUpdateProduct(product: IProduct): Promise<IProduct> {
+    const { productId, productName, dataSheetPath } = product;
+
+    if (!productId || !productName || !dataSheetPath) {
+      throw new BadRequestException('Id and Name and price are required');
+    }
+
+    try {
+      const updProduct = this.productEntity.updProduct(
+        productId,
+        productName,
+        dataSheetPath,
+      );
+
+      const result = await this.productEntity.updateProduct(updProduct);
+      return result;
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: e.message,
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Unknown error occurred',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async userDeleteProduct(productId: string): Promise<IProduct> {
+    try {
+      const result = await this.productEntity.deleteProduct(productId);
+      return result;
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: e.message,
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Unknown error occurred',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+}
