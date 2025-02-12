@@ -5,30 +5,26 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import {
-  IProduct,
-  IProductCreate,
-  ProductEntity,
-} from 'src/domain/product.entity';
+import { IBoard, IBoardCreate, BoardEntity } from 'src/domain/board.entity';
 
-export interface IProductUseCase {
-  userGetProducts(): Promise<IProduct[]>;
-  userGetProductById(productId: string): Promise<IProduct>;
-  userCreateProduct(productCreate: IProductCreate): Promise<IProduct>;
-  userUpdateProduct(product: IProduct): Promise<IProduct>;
-  userDeleteProduct(productId: string): Promise<IProduct>;
+export interface IBoardUseCase {
+  userGetBoards(): Promise<IBoard[]>;
+  userGetBoardById(boardId: string): Promise<IBoard>;
+  userCreateBoard(boardCreate: IBoardCreate): Promise<IBoard>;
+  userUpdateBoard(board: IBoard): Promise<IBoard>;
+  userDeleteBoard(boardId: string): Promise<IBoard>;
 }
 
 @Injectable()
-export class ProductUseCase {
+export class BoardUseCase {
   constructor(
-    @Inject(ProductEntity)
-    private readonly productEntity: ProductEntity,
+    @Inject(BoardEntity)
+    private readonly boardEntity: BoardEntity,
   ) {}
 
-  async userGetProducts(): Promise<IProduct[]> {
+  async userGetBoards(): Promise<IBoard[]> {
     try {
-      const result = await this.productEntity.getAllProducts();
+      const result = await this.boardEntity.getAllBoards();
       return result;
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -50,9 +46,9 @@ export class ProductUseCase {
     }
   }
 
-  async userGetProductById(productId: string): Promise<IProduct> {
+  async userGetBoardById(boardId: string): Promise<IBoard> {
     try {
-      const result = await this.productEntity.getProductById(productId);
+      const result = await this.boardEntity.getBoardById(boardId);
       return result;
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -74,19 +70,29 @@ export class ProductUseCase {
     }
   }
 
-  async userCreateProduct(productCreate: IProductCreate): Promise<IProduct> {
-    const { productName, dataSheetPath } = productCreate;
+  async userCreateBoard(boardCreate: IBoardCreate): Promise<IBoard> {
+    const { boardName, structure, stencil, diagramImgPath, boardImgPath } =
+      boardCreate;
 
-    if (!productName || !dataSheetPath) {
+    if (
+      !boardName ||
+      !structure ||
+      !stencil ||
+      !diagramImgPath ||
+      !boardImgPath
+    ) {
       throw new BadRequestException('Name and price are required');
     }
     try {
-      const newProduct = this.productEntity.newProduct(
-        productName,
-        dataSheetPath,
+      const newBoard = this.boardEntity.newBoard(
+        boardName,
+        structure,
+        stencil,
+        diagramImgPath,
+        boardImgPath,
       );
 
-      const result = await this.productEntity.createProduct(newProduct);
+      const result = await this.boardEntity.createBoard(newBoard);
       return result;
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -108,21 +114,37 @@ export class ProductUseCase {
     }
   }
 
-  async userUpdateProduct(product: IProduct): Promise<IProduct> {
-    const { productId, productName, dataSheetPath } = product;
+  async userUpdateBoard(board: IBoard): Promise<IBoard> {
+    const {
+      boardId,
+      boardName,
+      structure,
+      stencil,
+      diagramImgPath,
+      boardImgPath,
+    } = board;
 
-    if (!productId || !productName || !dataSheetPath) {
+    if (
+      !boardId ||
+      !structure ||
+      !stencil ||
+      !diagramImgPath ||
+      !boardImgPath
+    ) {
       throw new BadRequestException('Id and Name and price are required');
     }
 
     try {
-      const updProduct = this.productEntity.updProduct(
-        productId,
-        productName,
-        dataSheetPath,
+      const updBoard = this.boardEntity.updBoard(
+        boardId,
+        boardName,
+        structure,
+        stencil,
+        diagramImgPath,
+        boardImgPath,
       );
 
-      const result = await this.productEntity.updateProduct(updProduct);
+      const result = await this.boardEntity.updateBoard(updBoard);
       return result;
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -144,9 +166,9 @@ export class ProductUseCase {
     }
   }
 
-  async userDeleteProduct(productId: string): Promise<IProduct> {
+  async userDeleteBoard(boardId: string): Promise<IBoard> {
     try {
-      const result = await this.productEntity.deleteProduct(productId);
+      const result = await this.boardEntity.deleteBoard(boardId);
       return result;
     } catch (e: unknown) {
       if (e instanceof Error) {

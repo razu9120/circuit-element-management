@@ -20,7 +20,6 @@ export class ProductRepository implements IProductRepository {
   }
 
   async findAll(): Promise<IProduct[]> {
-    console.log('repository');
     return await this.driver.select(
       `SELECT product_id, product_name, data_sheet_path FROM products ORDER BY product_id`,
     );

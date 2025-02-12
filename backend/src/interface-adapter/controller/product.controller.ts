@@ -20,7 +20,6 @@ export class ProductController {
 
   @Get()
   userGetProducts(): Promise<IProduct[]> {
-    console.log('controller');
     return this.productUseCase.userGetProducts();
   }
 

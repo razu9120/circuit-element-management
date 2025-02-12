@@ -24,7 +24,6 @@ export class PostgresService implements ISqlDriver {
   }
 
   async select(sql: string): Promise<any> {
-    console.log('postgres:', sql);
     // return await this.#sql`${sql}`;
     return await this.#sql.unsafe(sql);
   }

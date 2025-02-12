@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PostgresDriver } from 'src/infrastructure/postgres/postgres.module';
 import { ProductRepository } from './products.repository';
+import { BoardRepository } from './boards.repository';
 
 @Module({
   imports: [PostgresDriver],
@@ -9,7 +10,11 @@ import { ProductRepository } from './products.repository';
       provide: 'IProductRepository',
       useClass: ProductRepository,
     },
+    {
+      provide: 'IBoardRepository',
+      useClass: BoardRepository,
+    },
   ],
-  exports: ['IProductRepository'],
+  exports: ['IProductRepository', 'IBoardRepository'],
 })
 export class RepositoryModule {}
