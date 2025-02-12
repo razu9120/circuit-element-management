@@ -8,10 +8,18 @@ import { ProductEntity } from './domain/product.entity';
 import { BoardController } from './interface-adapter/controller/board.controller';
 import { BoardUseCase } from './usecase/board.usecase';
 import { BoardEntity } from './domain/board.entity';
+import { ElementEntity } from './domain/element.entity';
+import { ElementUseCase } from './usecase/element.usecase';
+import { ElementController } from './interface-adapter/controller/element.controller';
 
 @Module({
   imports: [RepositoryModule],
-  controllers: [AppController, ProductController, BoardController],
+  controllers: [
+    AppController,
+    ProductController,
+    BoardController,
+    ElementController,
+  ],
   providers: [
     AppService,
     {
@@ -22,8 +30,13 @@ import { BoardEntity } from './domain/board.entity';
       provide: 'IBoardUseCase',
       useClass: BoardUseCase,
     },
+    {
+      provide: 'IElementUseCase',
+      useClass: ElementUseCase,
+    },
     ProductEntity,
     BoardEntity,
+    ElementEntity,
   ],
 })
 export class AppModule {}
