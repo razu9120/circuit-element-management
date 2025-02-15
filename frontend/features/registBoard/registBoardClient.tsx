@@ -17,15 +17,18 @@ const RegistBoardClient = () => {
     stencil: "false",
     pcbDesign: null as File | null,
     circuitDiagram: null as File | null,
+    csvFile: null as File | null,
   });
+  const [formKey, setFormKey] = useState(0);
 
   const handleChange = (field: string, value: string | File | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
-    const uploadUrl = "http://localhost:3001/api/upload"; // ファイルアップロード用
-    const saveUrl = "http://localhost:3001/api/boards"; // DB登録用
+    const uploadUrl = "http://localhost:3001/api/upload"; // 画像アップロード
+    const saveUrl = "http://localhost:3001/api/boards"; // 基板登録
+    const elementsUrl = "http://localhost:3001/api/elements/multiple"; // 素子登録
 
     try {
       // PCBデザインと回路図のアップロード
@@ -68,14 +71,64 @@ const RegistBoardClient = () => {
         body: JSON.stringify(boardData),
       });
 
+      const responseData = await saveResponse.json();
+      const boardId: number = responseData[0]?.board_id;
+
       if (saveResponse.ok) {
         console.log("登録成功");
       } else {
         console.error("DB登録に失敗しました。");
       }
+
+      // CSVファイルの処理
+      if (formData.csvFile) {
+        const csvText = await formData.csvFile.text();
+        const jsonElements = csvToJson(csvText, boardId);
+
+        console.log("jsonElements:", jsonElements);
+
+        // CSVデータの送信
+        const csvResponse = await fetch(elementsUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(jsonElements),
+        });
+
+        if (csvResponse.ok) {
+          console.log("素子データ登録成功");
+        } else {
+          console.error("素子データ登録に失敗しました。");
+        }
+      }
+
+      setFormData({
+        boardName: "",
+        structure: "1",
+        stencil: "false",
+        pcbDesign: null,
+        circuitDiagram: null,
+        csvFile: null,
+      });
+
+      setFormKey((prev) => prev + 1);
     } catch (error) {
       console.error("通信エラー:", error);
     }
+  };
+
+  const csvToJson = (csvText: string, boardId: number) => {
+    const lines = csvText.trim().split("\n");
+    const rows = lines.slice(1);
+
+    return rows.map((row) => {
+      const values = row.split(",").map((v) => v.replace(/"/g, "").trim());
+      return {
+        boardId: boardId,
+        reference: values[0],
+        content: values[1],
+        footprint: values[2],
+      };
+    });
   };
 
   const Redirect = (route: string) => {
@@ -83,7 +136,7 @@ const RegistBoardClient = () => {
   };
 
   return (
-    <>
+    <div key={formKey}>
       <div className="flex flex-col bg-base-300 rounded-box p-3">
         <h1 className="font-bold">名前</h1>
         <Input
@@ -115,6 +168,7 @@ const RegistBoardClient = () => {
         <h1 className="font-bold">PCBデザイン</h1>
         <Input
           type="file"
+          accept="image/jpeg, image/png, image/svg+xml, image/bmp"
           className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 mb-3 w-full max-w-md"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             handleChange("pcbDesign", e.target.files?.[0] || null)
@@ -124,6 +178,7 @@ const RegistBoardClient = () => {
         <h1 className="font-bold">回路図</h1>
         <Input
           type="file"
+          accept="image/jpeg, image/png, image/svg+xml, image/bmp"
           className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 mb-3 w-full max-w-md"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             handleChange("circuitDiagram", e.target.files?.[0] || null)
@@ -135,6 +190,9 @@ const RegistBoardClient = () => {
           type="file"
           className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 w-full max-w-md"
           accept=".csv"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            handleChange("csvFile", e.target.files?.[0] || null)
+          }
         />
       </div>
 
@@ -153,7 +211,7 @@ const RegistBoardClient = () => {
           onClick={handleSubmit}
         />
       </div>
-    </>
+    </div>
   );
 };
 

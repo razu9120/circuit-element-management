@@ -28,6 +28,13 @@ export class ElementController {
     return this.elementUseCase.userCreateElement(elementCreate);
   }
 
+  @Post('/multiple')
+  userCreateMultipleElement(
+    @Body() elementCreateList: IElementCreate[],
+  ): Promise<IElement> {
+    return this.elementUseCase.userCreateMultipleElement(elementCreateList);
+  }
+
   @Patch()
   userUpdateElement(@Body() element: IElement): Promise<IElement> {
     return this.elementUseCase.userUpdateElement(element);

@@ -15,6 +15,9 @@ export interface IElementUseCase {
   userGetElements(): Promise<IElement[]>;
   userGetElementById(elementId: string): Promise<IElement>;
   userCreateElement(elementCreate: IElementCreate): Promise<IElement>;
+  userCreateMultipleElement(
+    elementCreateList: IElementCreate[],
+  ): Promise<IElement>;
   userUpdateElement(element: IElement): Promise<IElement>;
   userDeleteElement(elementId: string): Promise<IElement>;
 }
@@ -51,15 +54,15 @@ export class ElementUseCase {
   }
 
   async userCreateElement(elementCreate: IElementCreate): Promise<IElement> {
-    const { boardId, productId, reference, content, footprint } = elementCreate;
+    const { boardId, reference, content, footprint } = elementCreate;
 
-    if (!boardId || !productId || !reference || !content || !footprint) {
-      throw new BadRequestException('Name and price are required');
+    if (!boardId) {
+      throw new BadRequestException('基板IDは必須です。');
     }
+
     try {
       const newElement = this.elementEntity.newElement(
         boardId,
-        productId,
         reference,
         content,
         footprint,
@@ -67,6 +70,52 @@ export class ElementUseCase {
 
       const result = await this.elementEntity.createElement(newElement);
       return result;
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: e.message,
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Unknown error occurred',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async userCreateMultipleElement(
+    elementCreateList: IElementCreate[],
+  ): Promise<IElement[]> {
+    if (!elementCreateList.length) {
+      throw new BadRequestException('要素リストが空です。');
+    }
+
+    try {
+      const createPromises = elementCreateList.map((elementCreate) => {
+        const { boardId, reference, content, footprint } = elementCreate;
+
+        if (!boardId) {
+          throw new BadRequestException('基板IDは必須です。');
+        }
+
+        const newElement = this.elementEntity.newElement(
+          boardId,
+          reference,
+          content,
+          footprint,
+        );
+        return this.elementEntity.createElement(newElement);
+      });
+
+      const results = await Promise.all(createPromises);
+      return results;
     } catch (e: unknown) {
       if (e instanceof Error) {
         throw new HttpException(

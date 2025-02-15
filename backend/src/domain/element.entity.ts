@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 
 export interface IElementCreate {
   boardId: number;
-  productId: number;
   reference: string;
   content: string;
   footprint: string;
@@ -10,6 +9,7 @@ export interface IElementCreate {
 
 export interface IElement extends IElementCreate {
   elementId: number;
+  productId: number;
 }
 
 export interface IElementRepository {
@@ -28,14 +28,12 @@ export class ElementEntity {
 
   newElement(
     boardId: number,
-    productId: number,
     reference: string,
     content: string,
     footprint: string,
   ): IElementCreate {
     return {
       boardId: boardId,
-      productId: productId,
       reference: reference,
       content: content,
       footprint: footprint,
