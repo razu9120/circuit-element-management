@@ -11,6 +11,7 @@ import { BoardEntity } from './domain/board.entity';
 import { ElementEntity } from './domain/element.entity';
 import { ElementUseCase } from './usecase/element.usecase';
 import { ElementController } from './interface-adapter/controller/element.controller';
+import { UploadController } from './interface-adapter/controller/upload.controller';
 
 @Module({
   imports: [RepositoryModule],
@@ -19,6 +20,7 @@ import { ElementController } from './interface-adapter/controller/element.contro
     ProductController,
     BoardController,
     ElementController,
+    UploadController,
   ],
   providers: [
     AppService,

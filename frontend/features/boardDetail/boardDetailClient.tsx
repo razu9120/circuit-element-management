@@ -11,8 +11,8 @@ import { stencilOptions, structureOptions } from "@/app/constants/options";
 
 const BoardDetailClient = () => {
   const router = useRouter();
-  const [isToggled, setIsToggled] = useState(false);
   const { setMenuId } = useMenu();
+  const [isToggled, setIsToggled] = useState(false);
 
   const Redirect = (route: string) => {
     router.push(route);

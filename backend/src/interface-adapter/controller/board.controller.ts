@@ -30,6 +30,7 @@ export class BoardController {
 
   @Post()
   userCreateBoard(@Body() boardCreate: IBoardCreate): Promise<IBoard> {
+    console.log('boardCreate:', boardCreate);
     return this.boardUseCase.userCreateBoard(boardCreate);
   }
 

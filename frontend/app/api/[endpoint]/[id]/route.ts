@@ -6,7 +6,7 @@ export const GET = async (
 ) => {
   const params = await props.params;
   const { endpoint, id } = params;
-  const backendUrl = `http://localhost:3000/backend/${endpoint}/${id}`;
+  const backendUrl = `http://localhost:3000/backend/v1/${endpoint}/${id}`;
 
   try {
     const response = await fetch(backendUrl, { method: "GET" });
@@ -36,7 +36,7 @@ export const DELETE = async (
 ) => {
   const params = await props.params;
   const { endpoint, id } = params;
-  const backendUrl = `http://localhost:3000/backend/${endpoint}/${id}`;
+  const backendUrl = `http://localhost:3000/backend/v1/${endpoint}/${id}`;
 
   try {
     const response = await fetch(backendUrl, { method: "DELETE" });

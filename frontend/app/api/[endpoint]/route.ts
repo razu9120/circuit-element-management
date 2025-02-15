@@ -6,7 +6,7 @@ export const GET = async (
 ) => {
   const params = await props.params;
   const { endpoint } = params;
-  const backendUrl = `http://localhost:3000/backend/${endpoint}`;
+  const backendUrl = `http://localhost:3000/backend/v1/${endpoint}`;
 
   try {
     const response = await fetch(backendUrl, { method: "GET" });
@@ -27,7 +27,7 @@ export const POST = async (
 ) => {
   const params = await props.params;
   const { endpoint } = params;
-  const backendUrl = `http://localhost:3000/backend/${endpoint}`;
+  const backendUrl = `http://localhost:3000/backend/v1/${endpoint}`;
 
   try {
     const requestBody = await req.json();
@@ -57,7 +57,7 @@ export const PUT = async (
 ) => {
   const params = await props.params;
   const { endpoint } = params;
-  const backendUrl = `http://localhost:3000/backend/${endpoint}`;
+  const backendUrl = `http://localhost:3000/backend/v1/${endpoint}`;
 
   try {
     const requestBody = await req.json();

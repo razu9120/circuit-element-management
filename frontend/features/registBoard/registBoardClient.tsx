@@ -1,16 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Button from "../../app/components/button";
 import Input from "../../app/components/input";
 import RadioButton from "../../app/components/radioButton";
 import { stencilOptions, structureOptions } from "@/app/constants/options";
+import { useMenu } from "@/app/contexts/menuContext";
 
 const RegistBoardClient = () => {
+  const router = useRouter();
+  const { setMenuId } = useMenu();
   const [formData, setFormData] = useState({
-    name: "",
-    structure: "structure-1",
-    stencil: "stencil-1",
+    boardName: "",
+    structure: "1",
+    stencil: "false",
     pcbDesign: null as File | null,
     circuitDiagram: null as File | null,
   });
@@ -46,12 +50,25 @@ const RegistBoardClient = () => {
 
       // DBに登録するデータを作成
       const boardData = {
-        name: formData.name,
+        boardName: formData.boardName,
         structure: formData.structure,
         stencil: formData.stencil,
-        pcbDesignPath: uploadResult.pcbDesignPath, // アップロード結果のファイルパス
-        circuitDiagramPath: uploadResult.circuitDiagramPath,
+        // diagramImgPath: uploadResult.pcbDesignPath,
+        diagramImgPath: "/test1",
+        // boardImgPath: uploadResult.circuitDiagramPath,
+        boardImgPath: "/test2",
       };
+
+      console.log("boardData:", boardData);
+
+      // {
+      //   "files": [
+      //     {
+      //       "filename": "1708001234567-987654321.png",
+      //       "path": "/uploads/1708001234567-987654321.png"
+      //     }
+      //   ]
+      // }
 
       // DBにリクエスト
       const saveResponse = await fetch(saveUrl, {
@@ -59,6 +76,8 @@ const RegistBoardClient = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(boardData),
       });
+
+      console.log("saveResponse:", saveResponse);
 
       if (saveResponse.ok) {
         console.log("登録成功！");
@@ -70,6 +89,10 @@ const RegistBoardClient = () => {
     }
   };
 
+  const Redirect = (route: string) => {
+    router.push(route);
+  };
+
   return (
     <>
       <div className="flex flex-col bg-base-300 rounded-box p-3">
@@ -77,9 +100,9 @@ const RegistBoardClient = () => {
         <Input
           type="text"
           placeholder="Type here"
-          value={formData.name}
+          value={formData.boardName}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleChange("name", e.target.value)
+            handleChange("boardName", e.target.value)
           }
           className="input input-bordered mt-1 mb-3 w-full max-w-xs"
         />
@@ -127,7 +150,14 @@ const RegistBoardClient = () => {
       </div>
 
       <div className="flex justify-center mt-3">
-        <Button label="戻る" className="btn btn-outline btn-secondary" />
+        <Button
+          label="戻る"
+          className="btn btn-outline btn-secondary"
+          onClick={() => {
+            setMenuId("000");
+            Redirect("/");
+          }}
+        />
         <Button
           label="登録"
           className="btn btn-primary ml-10 w-32"

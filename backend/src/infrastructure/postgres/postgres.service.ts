@@ -19,8 +19,8 @@ export class PostgresService implements ISqlDriver {
   }
 
   async insert(sql: string): Promise<any> {
-    return await this.#sql`${sql}`;
-    // return await this.#sql.unsafe(sql);
+    // return await this.#sql`${sql}`;
+    return await this.#sql.unsafe(sql);
   }
 
   async select(sql: string): Promise<any> {
@@ -29,12 +29,12 @@ export class PostgresService implements ISqlDriver {
   }
 
   async update(sql: string): Promise<any> {
-    return await this.#sql`${sql}`;
-    // return await this.#sql.unsafe(sql);
+    // return await this.#sql`${sql}`;
+    return await this.#sql.unsafe(sql);
   }
 
   async delete(sql: string): Promise<any> {
-    return await this.#sql`${sql}`;
-    // return await this.#sql.unsafe(sql);
+    // return await this.#sql`${sql}`;
+    return await this.#sql.unsafe(sql);
   }
 }
