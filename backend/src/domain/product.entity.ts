@@ -44,7 +44,6 @@ export class ProductEntity {
   }
 
   async getAllProducts(): Promise<IProduct[]> {
-    console.log('entity');
     return await this.productRepository.findAll();
   }
 

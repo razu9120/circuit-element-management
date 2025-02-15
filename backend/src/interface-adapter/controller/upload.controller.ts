@@ -4,17 +4,28 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { Request } from 'express';
 
 @Controller('backend/v1/upload')
 export class UploadController {
   @Post()
   @UseInterceptors(
-    FilesInterceptor('files', 10, {
+    AnyFilesInterceptor({
       storage: diskStorage({
-        destination: './uploads', // 保存先
+        destination: (req: Request, file, callback) => {
+          let uploadPath = './uploads';
+
+          if (file.fieldname === 'pcbDesign') {
+            uploadPath += '/pcbDesign';
+          } else if (file.fieldname === 'circuitDiagram') {
+            uploadPath += '/circuitDiagram';
+          }
+
+          callback(null, uploadPath);
+        },
         filename: (req, file, callback) => {
           const uniqueSuffix =
             Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -25,11 +36,15 @@ export class UploadController {
     }),
   )
   uploadFiles(@UploadedFiles() files: Express.Multer.File[]) {
-    const filePaths = files.map((file) => ({
-      filename: file.filename,
-      path: `/uploads/${file.filename}`,
-    }));
+    const fileMap = {};
 
-    return { files: filePaths };
+    files.forEach((file) => {
+      const fieldName = file.fieldname;
+      fileMap[fieldName] = {
+        path: `/uploads/${fieldName}/${file.filename}`,
+      };
+    });
+
+    return fileMap;
   }
 }

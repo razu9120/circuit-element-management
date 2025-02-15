@@ -25,7 +25,7 @@ const RegistBoardClient = () => {
 
   const handleSubmit = async () => {
     const uploadUrl = "http://localhost:3001/api/upload"; // ファイルアップロード用
-    const saveUrl = "http://localhost:3001/api/boards"; // DB 登録用
+    const saveUrl = "http://localhost:3001/api/boards"; // DB登録用
 
     try {
       // PCBデザインと回路図のアップロード
@@ -53,22 +53,13 @@ const RegistBoardClient = () => {
         boardName: formData.boardName,
         structure: formData.structure,
         stencil: formData.stencil,
-        // diagramImgPath: uploadResult.pcbDesignPath,
-        diagramImgPath: "/test1",
-        // boardImgPath: uploadResult.circuitDiagramPath,
-        boardImgPath: "/test2",
+        diagramImgPath: uploadResult.pcbDesign
+          ? uploadResult.pcbDesign.path
+          : "",
+        boardImgPath: uploadResult.circuitDiagram
+          ? uploadResult.circuitDiagram.path
+          : "",
       };
-
-      console.log("boardData:", boardData);
-
-      // {
-      //   "files": [
-      //     {
-      //       "filename": "1708001234567-987654321.png",
-      //       "path": "/uploads/1708001234567-987654321.png"
-      //     }
-      //   ]
-      // }
 
       // DBにリクエスト
       const saveResponse = await fetch(saveUrl, {
@@ -77,10 +68,8 @@ const RegistBoardClient = () => {
         body: JSON.stringify(boardData),
       });
 
-      console.log("saveResponse:", saveResponse);
-
       if (saveResponse.ok) {
-        console.log("登録成功！");
+        console.log("登録成功");
       } else {
         console.error("DB登録に失敗しました。");
       }

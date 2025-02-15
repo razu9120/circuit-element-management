@@ -74,14 +74,8 @@ export class BoardUseCase {
     const { boardName, structure, stencil, diagramImgPath, boardImgPath } =
       boardCreate;
 
-    if (
-      !boardName ||
-      !structure ||
-      !stencil ||
-      !diagramImgPath ||
-      !boardImgPath
-    ) {
-      throw new BadRequestException('Name and price are required');
+    if (!boardName || !structure || !stencil) {
+      throw new BadRequestException('名前、構造、ステンシルは必須です。');
     }
     try {
       const newBoard = this.boardEntity.newBoard(
