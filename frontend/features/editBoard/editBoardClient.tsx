@@ -2,15 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import RadioButton from "@/app/components/radioButton";
-import {
-  stencilOptions,
-  structureOptions,
-} from "../registBoard/registBoardClient";
 import Button from "@/app/components/button";
 import { useMenu } from "@/app/contexts/menuContext";
 import Input from "@/app/components/input";
 import { useState } from "react";
 import ConfirmModal from "@/app/components/confirmModal";
+import { stencilOptions, structureOptions } from "@/app/constants/options";
 // import { Select } from "@/app/components/select";
 
 const EditBoardClient = () => {

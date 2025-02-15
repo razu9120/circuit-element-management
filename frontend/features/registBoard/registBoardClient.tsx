@@ -1,21 +1,75 @@
 "use client";
 
+import { useState } from "react";
 import Button from "../../app/components/button";
 import Input from "../../app/components/input";
 import RadioButton from "../../app/components/radioButton";
-
-export const structureOptions = [
-  { value: "structure-1", label: "片面基板" },
-  { value: "structure-2", label: "両面基板" },
-  { value: "structure-3", label: "多層基板" },
-];
-
-export const stencilOptions = [
-  { value: "stencil-1", label: "なし" },
-  { value: "stencil-2", label: "あり" },
-];
+import { stencilOptions, structureOptions } from "@/app/constants/options";
 
 const RegistBoardClient = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    structure: "structure-1",
+    stencil: "stencil-1",
+    pcbDesign: null as File | null,
+    circuitDiagram: null as File | null,
+  });
+
+  const handleChange = (field: string, value: string | File | null) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async () => {
+    const uploadUrl = "http://localhost:3001/api/upload"; // ファイルアップロード用
+    const saveUrl = "http://localhost:3001/api/boards"; // DB 登録用
+
+    try {
+      // PCBデザインと回路図のアップロード
+      const uploadData = new FormData();
+      if (formData.pcbDesign)
+        uploadData.append("pcbDesign", formData.pcbDesign);
+      if (formData.circuitDiagram)
+        uploadData.append("circuitDiagram", formData.circuitDiagram);
+
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "POST",
+        body: uploadData,
+      });
+
+      if (!uploadResponse.ok) {
+        console.error("ファイルのアップロードに失敗しました。");
+        return;
+      }
+
+      const uploadResult = await uploadResponse.json();
+      console.log("アップロード成功:", uploadResult);
+
+      // DBに登録するデータを作成
+      const boardData = {
+        name: formData.name,
+        structure: formData.structure,
+        stencil: formData.stencil,
+        pcbDesignPath: uploadResult.pcbDesignPath, // アップロード結果のファイルパス
+        circuitDiagramPath: uploadResult.circuitDiagramPath,
+      };
+
+      // DBにリクエスト
+      const saveResponse = await fetch(saveUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(boardData),
+      });
+
+      if (saveResponse.ok) {
+        console.log("登録成功！");
+      } else {
+        console.error("DB登録に失敗しました。");
+      }
+    } catch (error) {
+      console.error("通信エラー:", error);
+    }
+  };
+
   return (
     <>
       <div className="flex flex-col bg-base-300 rounded-box p-3">
@@ -23,6 +77,10 @@ const RegistBoardClient = () => {
         <Input
           type="text"
           placeholder="Type here"
+          value={formData.name}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            handleChange("name", e.target.value)
+          }
           className="input input-bordered mt-1 mb-3 w-full max-w-xs"
         />
 
@@ -30,28 +88,34 @@ const RegistBoardClient = () => {
         <RadioButton
           name="boardType"
           options={structureOptions}
-          defaultValue="structure-1"
-          onChange={(value) => console.log(value)}
+          defaultValue={formData.structure}
+          onChange={(value) => handleChange("structure", value)}
         />
 
         <h1 className="font-bold">ステンシル</h1>
         <RadioButton
           name="boardType1"
           options={stencilOptions}
-          defaultValue="stencil-1"
-          onChange={(value) => console.log(value)}
+          defaultValue={formData.stencil}
+          onChange={(value) => handleChange("stencil", value)}
         />
 
         <h1 className="font-bold">PCBデザイン</h1>
         <Input
           type="file"
           className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 mb-3 w-full max-w-md"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            handleChange("pcbDesign", e.target.files?.[0] || null)
+          }
         />
 
         <h1 className="font-bold">回路図</h1>
         <Input
           type="file"
           className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 mb-3 w-full max-w-md"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            handleChange("circuitDiagram", e.target.files?.[0] || null)
+          }
         />
 
         <h1 className="font-bold">素子CSV</h1>
@@ -64,7 +128,11 @@ const RegistBoardClient = () => {
 
       <div className="flex justify-center mt-3">
         <Button label="戻る" className="btn btn-outline btn-secondary" />
-        <Button label="登録" className="btn btn-primary ml-10 w-32" />
+        <Button
+          label="登録"
+          className="btn btn-primary ml-10 w-32"
+          onClick={handleSubmit}
+        />
       </div>
     </>
   );

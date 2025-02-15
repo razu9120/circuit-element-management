@@ -3,13 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import RadioButton from "@/app/components/radioButton";
-import {
-  stencilOptions,
-  structureOptions,
-} from "../registBoard/registBoardClient";
+
 import Button from "@/app/components/button";
 import Toggle from "@/app/components/toggle";
 import { useMenu } from "@/app/contexts/menuContext";
+import { stencilOptions, structureOptions } from "@/app/constants/options";
 
 const BoardDetailClient = () => {
   const router = useRouter();

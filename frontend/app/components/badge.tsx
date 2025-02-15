@@ -9,13 +9,11 @@ const Badge: React.FC<BadgeProps> = ({
   ...props
 }) => {
   return (
-    <div>
-      <div
-        className={`bg-${color} rounded-box text-xs text-white pr-2 pl-2`}
-        {...props}
-      >
-        {label}
-      </div>
+    <div
+      className={`badge badge-${color} badge-sm text-xs text-white pr-2 pl-2`}
+      {...props}
+    >
+      {label}
     </div>
   );
 };
