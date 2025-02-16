@@ -6,6 +6,7 @@ export interface IBoardList {
   structure: string;
   stencil: boolean;
   boardImgPath: string;
+  hasElements: boolean;
 }
 
 const fetchBoards = async () => {

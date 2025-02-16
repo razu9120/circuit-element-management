@@ -12,9 +12,13 @@ export interface IBoard extends IBoardCreate {
   boardId: number;
 }
 
+export interface IBoardHasElements extends IBoard {
+  hasElements: boolean;
+}
+
 export interface IBoardRepository {
   findById(id: string): Promise<IBoard>;
-  findAll(): Promise<IBoard[]>;
+  findAll(): Promise<IBoardHasElements[]>;
   create(board: IBoardCreate): Promise<IBoard>;
   update(board: IBoardCreate): Promise<IBoard>;
   delete(id: string): Promise<IBoard>;

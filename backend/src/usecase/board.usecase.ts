@@ -6,10 +6,15 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { camelCase } from 'lodash';
-import { IBoard, IBoardCreate, BoardEntity } from 'src/domain/board.entity';
+import {
+  IBoard,
+  IBoardCreate,
+  BoardEntity,
+  IBoardHasElements,
+} from 'src/domain/board.entity';
 
 export interface IBoardUseCase {
-  userGetBoards(): Promise<IBoard[]>;
+  userGetBoards(): Promise<IBoardHasElements[]>;
   userGetBoardById(boardId: string): Promise<IBoard>;
   userCreateBoard(boardCreate: IBoardCreate): Promise<IBoard>;
   userUpdateBoard(board: IBoard): Promise<IBoard>;
@@ -23,7 +28,7 @@ export class BoardUseCase {
     private readonly boardEntity: BoardEntity,
   ) {}
 
-  async userGetBoards(): Promise<IBoard[]> {
+  async userGetBoards(): Promise<IBoardHasElements[]> {
     try {
       const result = await this.boardEntity.getAllBoards();
 
@@ -34,7 +39,7 @@ export class BoardUseCase {
         ),
       );
 
-      return camelCaseResult as IBoard[];
+      return camelCaseResult as IBoardHasElements[];
     } catch (e: unknown) {
       if (e instanceof Error) {
         throw new HttpException(

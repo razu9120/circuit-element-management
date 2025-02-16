@@ -8,7 +8,11 @@ import {
   Delete,
   Body,
 } from '@nestjs/common';
-import { IBoard, IBoardCreate } from 'src/domain/board.entity';
+import {
+  IBoard,
+  IBoardCreate,
+  IBoardHasElements,
+} from 'src/domain/board.entity';
 import { IBoardUseCase } from 'src/usecase/board.usecase';
 
 @Controller('backend/v1/boards')
@@ -19,7 +23,7 @@ export class BoardController {
   ) {}
 
   @Get()
-  userGetBoards(): Promise<IBoard[]> {
+  userGetBoards(): Promise<IBoardHasElements[]> {
     return this.boardUseCase.userGetBoards();
   }
 

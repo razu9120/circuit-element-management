@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   IBoard,
   IBoardCreate,
+  IBoardHasElements,
   IBoardRepository,
 } from 'src/domain/board.entity';
 import { ISqlDriver } from './repository';
@@ -22,11 +23,14 @@ export class BoardRepository implements IBoardRepository {
       `);
   }
 
-  async findAll(): Promise<IBoard[]> {
+  async findAll(): Promise<IBoardHasElements[]> {
     return await this.driver.select(`
-      SELECT board_id, board_name, structure, stencil, diagram_img_path, board_img_path
-      FROM boards
-      ORDER BY board_id
+      SELECT b.board_id, b.board_name, b.structure, b.stencil, b.diagram_img_path, b.board_img_path,
+        EXISTS (
+          SELECT 1 FROM elements e WHERE e.board_id = b.board_id
+        ) AS has_elements
+      FROM boards b
+      ORDER BY b.board_id
       `);
   }
 

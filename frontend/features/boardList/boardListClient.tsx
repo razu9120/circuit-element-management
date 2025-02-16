@@ -3,6 +3,7 @@ import Badge from "@/app/components/badge";
 import { useMenu } from "@/app/contexts/menuContext";
 import Link from "next/link";
 import React from "react";
+import Image from "next/image";
 import { IBoardList } from "./boardList";
 
 interface IBoardListClientProps {
@@ -15,16 +16,26 @@ const BoardListClient: React.FC<IBoardListClientProps> = ({ boardList }) => {
   const boards = boardList.map((board) => (
     <Link
       key={board.boardId}
-      href="/boardDetail"
+      href={`/boardList/${board.boardId}/boardDetail`}
       onClick={() => {
         setMenuId("003");
       }}
       className="card bg-base-100 md:w-[463px] mb-5 md:mb-0 shadow-xl cursor-pointer"
     >
       <figure>
-        <img
-          src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-          alt="Shoes"
+        <Image
+          src={
+            board.boardImgPath === ""
+              ? "/no_image3.png"
+              : `/api/images/${board.boardImgPath.replace(
+                  "/uploads/pcbDesign/",
+                  ""
+                )}`
+          }
+          alt="PCB Design"
+          width={500}
+          height={400}
+          style={{ objectFit: "contain" }}
         />
       </figure>
       <div className="card-body">
@@ -35,7 +46,7 @@ const BoardListClient: React.FC<IBoardListClientProps> = ({ boardList }) => {
           {board.structure === "3" && <Badge label="多層基板" />}
           {!board.stencil && <Badge label="ステンシルなし" color="secondary" />}
           {board.stencil && <Badge label="ステンシルあり" color="secondary" />}
-          {/* {board.csvFile && <Badge label="素子" color="accent" />} */}
+          {board.hasElements && <Badge label="素子" color="accent" />}
         </div>
       </div>
     </Link>

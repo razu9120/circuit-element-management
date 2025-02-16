@@ -93,3 +93,31 @@ export const menu = [
     ],
   },
 ];
+
+export const breadcrumbs = [
+  { menuId: "000", menuName: "ホーム", destination: "/" },
+  { menuId: "001", menuName: "基板登録", destination: "/registBoard" },
+  { menuId: "002", menuName: "基板一覧", destination: "/boardList" },
+  {
+    menuId: "003",
+    menuName: "基板詳細",
+    destination: "/boardList/:id/boardDetail",
+  },
+  {
+    menuId: "004",
+    menuName: "基板編集",
+    destination: "/boardList/:id/boardDetail/editBoard",
+  },
+  { menuId: "005", menuName: "製品登録", destination: "/registProduct" },
+  { menuId: "006", menuName: "製品一覧", destination: "/productList" },
+  {
+    menuId: "007",
+    menuName: "製品詳細",
+    destination: "/productList/:id/productDetail",
+  },
+  {
+    menuId: "008",
+    menuName: "製品編集",
+    destination: "/productList/:id/productDetail/editProduct",
+  },
+];
