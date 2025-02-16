@@ -11,6 +11,7 @@ interface RadioButtonProps {
   options: RadioOption[]; // オプションの配列
   defaultValue?: string; // デフォルトで選択される値
   onChange?: (value: string) => void; // 値が変更されたときのコールバック関数
+  disabled?: boolean;
 }
 
 const RadioButton: React.FC<RadioButtonProps> = ({
@@ -18,6 +19,7 @@ const RadioButton: React.FC<RadioButtonProps> = ({
   options,
   defaultValue,
   onChange,
+  disabled = false,
 }) => {
   return (
     <div className="md:flex md:mt-2 mb-2">
@@ -33,6 +35,7 @@ const RadioButton: React.FC<RadioButtonProps> = ({
             className="radio radio-sm md:radio-md radio-accent"
             defaultChecked={defaultValue === option.value}
             onChange={(e) => onChange && onChange(e.target.value)}
+            disabled={disabled}
           />
           <span className="label-text mr-4">{option.label}</span>
         </label>

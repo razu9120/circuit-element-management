@@ -1,15 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import RadioButton from "@/app/components/radioButton";
 
 import Button from "@/app/components/button";
 import Toggle from "@/app/components/toggle";
 import { useMenu } from "@/app/contexts/menuContext";
 import { stencilOptions, structureOptions } from "@/app/constants/options";
+import { IBoard } from "./boardDetail";
 
-const BoardDetailClient = () => {
+interface BoardDetailClientProps {
+  board: IBoard;
+}
+
+const BoardDetailClient: React.FC<BoardDetailClientProps> = ({ board }) => {
   const router = useRouter();
   const { setMenuId } = useMenu();
   const [isToggled, setIsToggled] = useState(false);
@@ -30,18 +36,36 @@ const BoardDetailClient = () => {
           <div className="flex flex-col md:flex-row gap-3">
             <div>
               <h1 className="font-bold mt-2 mb-1">PCBデザイン</h1>
-              <img
-                className="rounded-box w-[300px] md:w-[346px] object-cover"
-                src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
+              <Image
+                src={
+                  board.boardImgPath === ""
+                    ? "/no_image3.png"
+                    : `/api/images/pcbDesign/${board.boardImgPath.replace(
+                        "/uploads/pcbDesign/",
+                        ""
+                      )}`
+                }
                 alt="PCB Design"
+                width={500}
+                height={400}
+                className="rounded-box w-[300px] md:w-[346px] object-cover"
               />
             </div>
             <div>
               <h1 className="font-bold mt-2 mb-1">回路図</h1>
-              <img
+              <Image
+                src={
+                  board.boardImgPath === ""
+                    ? "/no_image3.png"
+                    : `/api/images/circuitDiagram/${board.diagramImgPath.replace(
+                        "/uploads/circuitDiagram/",
+                        ""
+                      )}`
+                }
+                alt="PCB Design"
+                width={500}
+                height={400}
                 className="rounded-box w-[300px] md:w-[346px] object-cover"
-                src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-                alt="Circuit Diagram"
               />
             </div>
           </div>
@@ -50,36 +74,56 @@ const BoardDetailClient = () => {
             <div className="flex flex-col md:flex-row gap-3">
               <div>
                 <h1 className="font-bold mt-2 mb-1">PCBデザイン</h1>
-                <img
+                <Image
+                  src={
+                    board.boardImgPath === ""
+                      ? "/no_image3.png"
+                      : `/api/images/pcbDesign/${board.boardImgPath.replace(
+                          "/uploads/pcbDesign/",
+                          ""
+                        )}`
+                  }
+                  alt="PCB Design"
+                  width={500}
+                  height={400}
                   className="rounded-box w-full"
-                  src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-                  alt="Shoes"
                 />
               </div>
               <div>
                 <h1 className="font-bold mt-2 mb-1">回路図</h1>
-                <img
+                <Image
+                  src={
+                    board.boardImgPath === ""
+                      ? "/no_image3.png"
+                      : `/api/images/circuitDiagram/${board.diagramImgPath.replace(
+                          "/uploads/circuitDiagram/",
+                          ""
+                        )}`
+                  }
+                  alt="PCB Design"
+                  width={500}
+                  height={400}
                   className="rounded-box w-full"
-                  src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-                  alt="Shoes"
                 />
               </div>
             </div>
             <h1 className="font-bold mt-2 mb-2">名前</h1>
-            <div>LoRa通信シリアル変換接続</div>
+            <div>{board.boardName}</div>
             <h1 className="font-bold mt-5">構造</h1>
             <RadioButton
               name="boardType"
               options={structureOptions}
-              defaultValue="structure-1"
+              defaultValue={board.structure}
               onChange={(value) => console.log(value)}
+              disabled
             />
             <h1 className="font-bold mt-2">ステンシル</h1>
             <RadioButton
               name="boardType1"
               options={stencilOptions}
-              defaultValue="stencil-1"
+              defaultValue={board.stencil ? "true" : "false"}
               onChange={(value) => console.log(value)}
+              disabled
             />
           </>
         )}

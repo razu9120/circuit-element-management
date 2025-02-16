@@ -63,7 +63,17 @@ export class BoardUseCase {
   async userGetBoardById(boardId: string): Promise<IBoard> {
     try {
       const result = await this.boardEntity.getBoardById(boardId);
-      return result;
+
+      const camelCaseResult: IBoard = {
+        boardId: result[0].board_id,
+        boardName: result[0].board_name,
+        structure: result[0].structure,
+        stencil: result[0].stencil,
+        diagramImgPath: result[0].diagram_img_path,
+        boardImgPath: result[0].board_img_path,
+      };
+
+      return camelCaseResult;
     } catch (e: unknown) {
       if (e instanceof Error) {
         throw new HttpException(

@@ -27,7 +27,7 @@ const BoardListClient: React.FC<IBoardListClientProps> = ({ boardList }) => {
           src={
             board.boardImgPath === ""
               ? "/no_image3.png"
-              : `/api/images/${board.boardImgPath.replace(
+              : `/api/images/pcbDesign/${board.boardImgPath.replace(
                   "/uploads/pcbDesign/",
                   ""
                 )}`
