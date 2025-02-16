@@ -14,15 +14,20 @@ export class BoardRepository implements IBoardRepository {
   ) {}
 
   async findById(id: string): Promise<IBoard> {
-    return await this.driver.select(
-      `SELECT board_name, structure, stencil, diagram_img_path, board_img_path FROM boards WHERE board_id = ${id} ORDER BY board_id`,
-    );
+    return await this.driver.select(`
+      SELECT board_id, board_name, structure, stencil, diagram_img_path, board_img_path
+      FROM boards
+      WHERE board_id = ${id}
+      ORDER BY board_id
+      `);
   }
 
   async findAll(): Promise<IBoard[]> {
-    return await this.driver.select(
-      `SELECT board_name, structure, stencil, diagram_img_path, board_img_path FROM boards ORDER BY board_id`,
-    );
+    return await this.driver.select(`
+      SELECT board_id, board_name, structure, stencil, diagram_img_path, board_img_path
+      FROM boards
+      ORDER BY board_id
+      `);
   }
 
   async create(board: IBoardCreate): Promise<IBoard> {

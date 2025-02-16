@@ -56,10 +56,8 @@ const RegistBoardClient = () => {
         boardName: formData.boardName,
         structure: formData.structure,
         stencil: formData.stencil,
-        diagramImgPath: uploadResult.pcbDesign
-          ? uploadResult.pcbDesign.path
-          : "",
-        boardImgPath: uploadResult.circuitDiagram
+        boardImgPath: uploadResult.pcbDesign ? uploadResult.pcbDesign.path : "",
+        diagramImgPath: uploadResult.circuitDiagram
           ? uploadResult.circuitDiagram.path
           : "",
       };
@@ -138,7 +136,9 @@ const RegistBoardClient = () => {
   return (
     <div key={formKey}>
       <div className="flex flex-col bg-base-300 rounded-box p-3">
-        <h1 className="font-bold">名前</h1>
+        <h1 className="font-bold">
+          名前<span className="text-red-500">*</span>
+        </h1>
         <Input
           type="text"
           placeholder="Type here"
@@ -149,7 +149,9 @@ const RegistBoardClient = () => {
           className="input input-bordered mt-1 mb-3 w-full max-w-xs"
         />
 
-        <h1 className="font-bold">構造</h1>
+        <h1 className="font-bold">
+          構造<span className="text-red-500">*</span>
+        </h1>
         <RadioButton
           name="boardType"
           options={structureOptions}
@@ -157,7 +159,9 @@ const RegistBoardClient = () => {
           onChange={(value) => handleChange("structure", value)}
         />
 
-        <h1 className="font-bold">ステンシル</h1>
+        <h1 className="font-bold">
+          ステンシル<span className="text-red-500">*</span>
+        </h1>
         <RadioButton
           name="boardType1"
           options={stencilOptions}
