@@ -9,13 +9,17 @@ import Button from "@/app/components/button";
 import Toggle from "@/app/components/toggle";
 import { useMenu } from "@/app/contexts/menuContext";
 import { stencilOptions, structureOptions } from "@/app/constants/options";
-import { IBoard } from "./boardDetail";
+import { IBoard, IElementAndBoard } from "./boardDetail";
 
 interface BoardDetailClientProps {
   board: IBoard;
+  elements: IElementAndBoard[];
 }
 
-const BoardDetailClient: React.FC<BoardDetailClientProps> = ({ board }) => {
+const BoardDetailClient: React.FC<BoardDetailClientProps> = ({
+  board,
+  elements,
+}) => {
   const router = useRouter();
   const { setMenuId } = useMenu();
   const [isToggled, setIsToggled] = useState(false);
@@ -23,6 +27,32 @@ const BoardDetailClient: React.FC<BoardDetailClientProps> = ({ board }) => {
   const Redirect = (route: string) => {
     router.push(route);
   };
+
+  const elementList = elements.map((element) => (
+    <div
+      key={element.elementId}
+      className="flex bg-base-100 rounded-box w-[1000px] md:w-full mt-2 p-3"
+    >
+      {element.productName ? (
+        <Button
+          label="データシート"
+          className="btn btn-xs btn-warning w-24 mr-5"
+        />
+      ) : (
+        <Button
+          label="データシート"
+          className="btn btn-xs btn-warning w-24 mr-5"
+          disabled
+        />
+      )}
+      <h1 className="font-bold">{element.reference}</h1>
+      {element.productName && (
+        <h1 className="font-bold ml-5">{element.productName}</h1>
+      )}
+      <h1 className="font-bold ml-5">{element.content}</h1>
+      <h1 className="font-bold ml-5">{element.footprint}</h1>
+    </div>
+  ));
 
   return (
     <>
@@ -131,22 +161,7 @@ const BoardDetailClient: React.FC<BoardDetailClientProps> = ({ board }) => {
       <div className="bg-base-300 rounded-box mt-3 p-3">
         <h1 className="font-bold bg-base-300 mb-2 sticky top-0 z-5">素子</h1>
         <div className="h-64 md:h-72 lg:h-[465px] overflow-y-auto">
-          {Array.from({ length: 10 }).map((_, index) => (
-            <div
-              key={index}
-              className="flex bg-base-100 rounded-box w-[1000px] md:w-full mt-2 p-3"
-            >
-              <Button
-                label="データシート"
-                className="btn btn-xs btn-warning w-24 mr-5"
-              />
-              <h1 className="font-bold">R1</h1>
-              <h1 className="font-bold ml-5">20Ω</h1>
-              <h1 className="font-bold ml-5">
-                Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder
-              </h1>
-            </div>
-          ))}
+          {elementList}
         </div>
       </div>
 

@@ -8,7 +8,11 @@ import {
   Delete,
   Body,
 } from '@nestjs/common';
-import { IElement, IElementCreate } from 'src/domain/element.entity';
+import {
+  IElement,
+  IElementAndBoard,
+  IElementCreate,
+} from 'src/domain/element.entity';
 import { IElementUseCase } from 'src/usecase/element.usecase';
 
 @Controller('backend/v1/elements')
@@ -19,8 +23,15 @@ export class ElementController {
   ) {}
 
   @Get(':elementId')
-  userGetElementById(@Param('elementId') elementId: string): Promise<IElement> {
+  userGetElementById(@Param('elementId') elementId: number): Promise<IElement> {
     return this.elementUseCase.userGetElementById(elementId);
+  }
+
+  @Get('board/:boardId')
+  userGetElementByBoardId(
+    @Param('boardId') boardId: number,
+  ): Promise<IElementAndBoard[]> {
+    return this.elementUseCase.userGetElementByBoardId(boardId);
   }
 
   @Post()
@@ -41,7 +52,7 @@ export class ElementController {
   }
 
   @Delete(':elementId')
-  userDeleteElement(@Param('elementId') elementId: string): Promise<IElement> {
+  userDeleteElement(@Param('elementId') elementId: number): Promise<IElement> {
     return this.elementUseCase.userDeleteElement(elementId);
   }
 }

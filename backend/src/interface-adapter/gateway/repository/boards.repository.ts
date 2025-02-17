@@ -25,12 +25,12 @@ export class BoardRepository implements IBoardRepository {
 
   async findAll(): Promise<IBoardHasElements[]> {
     return await this.driver.select(`
-      SELECT b.board_id, b.board_name, b.structure, b.stencil, b.diagram_img_path, b.board_img_path,
+      SELECT T1.board_id, T1.board_name, T1.structure, T1.stencil, T1.diagram_img_path, T1.board_img_path,
         EXISTS (
-          SELECT 1 FROM elements e WHERE e.board_id = b.board_id
+          SELECT 1 FROM elements T2 WHERE T2.board_id = T1.board_id
         ) AS has_elements
-      FROM boards b
-      ORDER BY b.board_id
+      FROM boards T1
+      ORDER BY T1.board_id
       `);
   }
 

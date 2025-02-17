@@ -12,11 +12,21 @@ export interface IElement extends IElementCreate {
   productId: number;
 }
 
+export interface IElementAndBoard {
+  elementId: number;
+  reference: string;
+  content: string;
+  footprint: string;
+  productName: string;
+  DataSheetPath: string;
+}
+
 export interface IElementRepository {
-  findById(id: string): Promise<IElement>;
+  findById(id: number): Promise<IElement>;
+  findByBoardId(id: number): Promise<IElementAndBoard[]>;
   create(element: IElementCreate): Promise<IElement>;
   update(element: IElementCreate): Promise<IElement>;
-  delete(id: string): Promise<IElement>;
+  delete(id: number): Promise<IElement>;
 }
 
 @Injectable()
@@ -58,8 +68,12 @@ export class ElementEntity {
     };
   }
 
-  async getElementById(id: string): Promise<IElement> {
+  async getElementById(id: number): Promise<IElement> {
     return await this.elementRepository.findById(id);
+  }
+
+  async getElementByBoardId(id: number): Promise<IElementAndBoard[]> {
+    return await this.elementRepository.findByBoardId(id);
   }
 
   async createElement(element: IElementCreate): Promise<IElement> {
@@ -70,7 +84,7 @@ export class ElementEntity {
     return await this.elementRepository.update(element);
   }
 
-  async deleteElement(id: string): Promise<IElement> {
+  async deleteElement(id: number): Promise<IElement> {
     return await this.elementRepository.delete(id);
   }
 }

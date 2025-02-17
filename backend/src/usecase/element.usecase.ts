@@ -5,21 +5,24 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { camelCase } from 'lodash';
 import {
   IElement,
   IElementCreate,
   ElementEntity,
+  IElementAndBoard,
 } from 'src/domain/element.entity';
 
 export interface IElementUseCase {
   userGetElements(): Promise<IElement[]>;
-  userGetElementById(elementId: string): Promise<IElement>;
+  userGetElementById(elementId: number): Promise<IElement>;
+  userGetElementByBoardId(boardId: number): Promise<IElementAndBoard[]>;
   userCreateElement(elementCreate: IElementCreate): Promise<IElement>;
   userCreateMultipleElement(
     elementCreateList: IElementCreate[],
   ): Promise<IElement>;
   userUpdateElement(element: IElement): Promise<IElement>;
-  userDeleteElement(elementId: string): Promise<IElement>;
+  userDeleteElement(elementId: number): Promise<IElement>;
 }
 
 @Injectable()
@@ -29,10 +32,41 @@ export class ElementUseCase {
     private readonly elementEntity: ElementEntity,
   ) {}
 
-  async userGetElementById(elementId: string): Promise<IElement> {
+  async userGetElementById(elementId: number): Promise<IElement> {
     try {
       const result = await this.elementEntity.getElementById(elementId);
       return result;
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: e.message,
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Unknown error occurred',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async userGetElementByBoardId(boardId: number): Promise<IElementAndBoard[]> {
+    try {
+      const result = await this.elementEntity.getElementByBoardId(boardId);
+
+      const camelCaseResult = result.map((board) =>
+        Object.fromEntries(
+          Object.entries(board).map(([key, value]) => [camelCase(key), value]),
+        ),
+      );
+
+      return camelCaseResult as IElementAndBoard[];
     } catch (e: unknown) {
       if (e instanceof Error) {
         throw new HttpException(
@@ -183,7 +217,7 @@ export class ElementUseCase {
     }
   }
 
-  async userDeleteElement(elementId: string): Promise<IElement> {
+  async userDeleteElement(elementId: number): Promise<IElement> {
     try {
       const result = await this.elementEntity.deleteElement(elementId);
       return result;

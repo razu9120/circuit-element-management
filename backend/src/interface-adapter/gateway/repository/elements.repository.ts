@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   IElement,
+  IElementAndBoard,
   IElementCreate,
   IElementRepository,
 } from 'src/domain/element.entity';
@@ -13,10 +14,21 @@ export class ElementRepository implements IElementRepository {
     private readonly driver: ISqlDriver,
   ) {}
 
-  async findById(id: string): Promise<IElement> {
-    return await this.driver.select(
-      `SELECT element_id, board_id, product_id, reference, content, footprint FROM elements WHERE element_id = ${id} ORDER BY element_id`,
-    );
+  async findById(id: number): Promise<IElement> {
+    return await this.driver.select(`
+      SELECT element_id, board_id, product_id, reference, content, footprint
+      FROM elements
+      WHERE element_id = ${id}
+      ORDER BY element_id`);
+  }
+
+  async findByBoardId(id: number): Promise<IElementAndBoard[]> {
+    return await this.driver.select(`
+      SELECT T1.element_id, T1.reference, T1.content, T1.footprint, T2.product_name, T2.data_sheet_path
+      FROM elements T1
+      LEFT OUTER JOIN products T2
+      ON T1.product_id = T2.product_id
+      WHERE T1.board_id = ${id}`);
   }
 
   async create(element: IElementCreate): Promise<IElement> {
@@ -35,7 +47,7 @@ export class ElementRepository implements IElementRepository {
       `);
   }
 
-  async delete(id: string): Promise<IElement> {
+  async delete(id: number): Promise<IElement> {
     return await this.driver.delete(`
       DELETE FROM elements
       WHERE element_id = ${id}

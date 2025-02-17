@@ -10,6 +10,15 @@ export interface IBoard {
   diagramImgPath: string;
 }
 
+export interface IElementAndBoard {
+  elementId: number;
+  reference: string;
+  content: string;
+  footprint: string;
+  productName: string;
+  DataSheetPath: string;
+}
+
 export interface BoardDetailProps {
   boardId: number;
 }
@@ -28,10 +37,25 @@ const fetchBoard = async (boardId: number) => {
   return await response.json();
 };
 
+const fetchElements = async (boardId: number) => {
+  const response = await fetch(
+    `http://localhost:3000/backend/v1/elements/board/${boardId}`,
+    {
+      cache: "no-store",
+    }
+  );
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.messageCode || "エラーが発生しました");
+  }
+  return await response.json();
+};
+
 const BoardDetail: React.FC<BoardDetailProps> = async ({ boardId }) => {
   try {
     const board: IBoard = await fetchBoard(boardId);
-    return <BoardDetailClient board={board} />;
+    const elements: IElementAndBoard[] = await fetchElements(boardId);
+    return <BoardDetailClient board={board} elements={elements} />;
   } catch (error) {
     console.log(error);
   }
