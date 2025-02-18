@@ -4,18 +4,18 @@ import { useRouter } from "next/navigation";
 import { menu } from "../constants/menu";
 import { useMenu } from "../contexts/menuContext";
 
-interface BreadcrumbItem {
+interface IBreadcrumbItem {
   label: string;
   path?: string;
   isActive?: boolean;
 }
 
-interface Menu {
+interface IMenu {
   menuId: string;
   menuName: string;
   destination: string;
   displayFlg: boolean;
-  breadcrumbItems: BreadcrumbItem[];
+  breadcrumbItems: IBreadcrumbItem[];
 }
 
 const Sidemenu = () => {
@@ -27,8 +27,8 @@ const Sidemenu = () => {
   };
 
   const menuList = menu
-    .filter((item: Menu) => item.displayFlg)
-    .map((item: Menu) => (
+    .filter((item: IMenu) => item.displayFlg)
+    .map((item: IMenu) => (
       <li key={item.menuId} className="h-10">
         <a
           onClick={() => {

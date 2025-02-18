@@ -1,12 +1,12 @@
 "use client";
 
-interface ToggleProps {
+interface IToggleProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   className?: string;
 }
 
-const Toggle = ({ checked, onChange, className = "" }: ToggleProps) => {
+const Toggle = ({ checked, onChange, className = "" }: IToggleProps) => {
   return (
     <input
       type="checkbox"

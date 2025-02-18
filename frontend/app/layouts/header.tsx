@@ -4,18 +4,18 @@ import { menu } from "../constants/menu";
 import Breadcrumbs from "./breadcrumb";
 import { useMenu } from "../contexts/menuContext";
 
-interface BreadcrumbItem {
+interface IBreadcrumbItem {
   label: string;
   path?: string;
   isActive?: boolean;
 }
 
-export interface Menu {
+export interface IMenu {
   menuId: string;
   menuName: string;
   destination: string;
   displayFlg: boolean;
-  breadcrumbItems: BreadcrumbItem[];
+  breadcrumbItems: IBreadcrumbItem[];
 }
 
 const Header = () => {
@@ -27,8 +27,8 @@ const Header = () => {
   };
 
   const menuList = menu
-    .filter((item: Menu) => item.displayFlg)
-    .map((item: Menu) => (
+    .filter((item: IMenu) => item.displayFlg)
+    .map((item: IMenu) => (
       <li key={item.menuId} className="h-10">
         <a
           onClick={() => {

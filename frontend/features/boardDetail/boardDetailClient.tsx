@@ -11,12 +11,12 @@ import { useMenu } from "@/app/contexts/menuContext";
 import { stencilOptions, structureOptions } from "@/app/constants/options";
 import { IBoard, IElementAndBoard } from "./boardDetail";
 
-interface BoardDetailClientProps {
+interface IBoardDetailClientProps {
   board: IBoard;
   elements: IElementAndBoard[];
 }
 
-const BoardDetailClient: React.FC<BoardDetailClientProps> = ({
+const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
   board,
   elements,
 }) => {

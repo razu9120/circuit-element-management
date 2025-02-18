@@ -1,20 +1,20 @@
 import React from "react";
 
 // Propsの型を定義
-interface RadioOption {
+interface IRadioOption {
   value: string;
   label: string;
 }
 
-interface RadioButtonProps {
+interface IRadioButtonProps {
   name: string; // ラジオボタンのname属性
-  options: RadioOption[]; // オプションの配列
+  options: IRadioOption[]; // オプションの配列
   defaultValue?: string; // デフォルトで選択される値
   onChange?: (value: string) => void; // 値が変更されたときのコールバック関数
   disabled?: boolean;
 }
 
-const RadioButton: React.FC<RadioButtonProps> = ({
+const RadioButton: React.FC<IRadioButtonProps> = ({
   name,
   options,
   defaultValue,

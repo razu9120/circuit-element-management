@@ -1,9 +1,9 @@
-interface BadgeProps {
+interface IBadgeProps {
   label: string;
   color?: string;
 }
 
-const Badge: React.FC<BadgeProps> = ({
+const Badge: React.FC<IBadgeProps> = ({
   label,
   color = "primary",
   ...props

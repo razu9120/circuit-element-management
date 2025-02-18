@@ -19,7 +19,7 @@ export interface IElementAndBoard {
   DataSheetPath: string;
 }
 
-export interface BoardDetailProps {
+export interface IBoardDetailProps {
   boardId: number;
 }
 
@@ -51,7 +51,7 @@ const fetchElements = async (boardId: number) => {
   return await response.json();
 };
 
-const BoardDetail: React.FC<BoardDetailProps> = async ({ boardId }) => {
+const BoardDetail: React.FC<IBoardDetailProps> = async ({ boardId }) => {
   try {
     const board: IBoard = await fetchBoard(boardId);
     const elements: IElementAndBoard[] = await fetchElements(boardId);
