@@ -20,7 +20,7 @@ const BoardListClient: React.FC<IBoardListClientProps> = ({ boardList }) => {
       onClick={() => {
         setMenuId("003");
       }}
-      className="card bg-base-100 md:w-[463px] mb-5 md:mb-0 shadow-xl cursor-pointer"
+      className="card bg-base-300 md:w-[463px] mb-5 md:mb-0 shadow-xl cursor-pointer"
     >
       <figure>
         <Image

@@ -179,7 +179,7 @@ const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
           className="btn btn-primary ml-10 w-32"
           onClick={() => {
             setMenuId("004");
-            Redirect("/editBoard");
+            Redirect(`/boardList/${board.boardId}/boardDetail/editBoard`);
           }}
         />
       </div>

@@ -163,7 +163,7 @@ const RegistBoardClient = () => {
           ステンシル<span className="text-red-500">*</span>
         </h1>
         <RadioButton
-          name="boardType1"
+          name="stencil"
           options={stencilOptions}
           defaultValue={formData.stencil}
           onChange={(value) => handleChange("stencil", value)}
