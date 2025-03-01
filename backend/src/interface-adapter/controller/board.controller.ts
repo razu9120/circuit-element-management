@@ -28,7 +28,7 @@ export class BoardController {
   }
 
   @Get(':boardId')
-  userGetBoardById(@Param('boardId') boardId: string): Promise<IBoard> {
+  userGetBoardById(@Param('boardId') boardId: number): Promise<IBoard> {
     return this.boardUseCase.userGetBoardById(boardId);
   }
 
@@ -43,7 +43,7 @@ export class BoardController {
   }
 
   @Delete(':boardId')
-  userDeleteBoard(@Param('boardId') boardId: string): Promise<IBoard> {
+  userDeleteBoard(@Param('boardId') boardId: number): Promise<IBoard> {
     return this.boardUseCase.userDeleteBoard(boardId);
   }
 }

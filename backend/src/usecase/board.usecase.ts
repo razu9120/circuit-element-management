@@ -15,10 +15,10 @@ import {
 
 export interface IBoardUseCase {
   userGetBoards(): Promise<IBoardHasElements[]>;
-  userGetBoardById(boardId: string): Promise<IBoard>;
+  userGetBoardById(boardId: number): Promise<IBoard>;
   userCreateBoard(boardCreate: IBoardCreate): Promise<IBoard>;
   userUpdateBoard(board: IBoard): Promise<IBoard>;
-  userDeleteBoard(boardId: string): Promise<IBoard>;
+  userDeleteBoard(boardId: number): Promise<IBoard>;
 }
 
 @Injectable()
@@ -60,7 +60,7 @@ export class BoardUseCase {
     }
   }
 
-  async userGetBoardById(boardId: string): Promise<IBoard> {
+  async userGetBoardById(boardId: number): Promise<IBoard> {
     try {
       const result = await this.boardEntity.getBoardById(boardId);
 
@@ -184,7 +184,7 @@ export class BoardUseCase {
     }
   }
 
-  async userDeleteBoard(boardId: string): Promise<IBoard> {
+  async userDeleteBoard(boardId: number): Promise<IBoard> {
     try {
       const result = await this.boardEntity.deleteBoard(boardId);
       return result;

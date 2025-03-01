@@ -39,23 +39,12 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   };
 
   const handleSubmit = async () => {
-    const deleteUrl = `http://localhost:3001/api/images/delete/${board.boardId}`; // 画像削除
     const uploadUrl = "http://localhost:3001/api/upload"; // 画像アップロード
-    const saveUrl = "http://localhost:3001/api/boards"; // 基板登録
+    const deleteUrl = "http://localhost:3001/api/images"; // 画像削除
+    const saveUrl = "http://localhost:3001/api/boards"; // 基板更新
     const elementsUrl = "http://localhost:3001/api/elements/multiple"; // 素子登録
 
     try {
-      if (formData.pcbDesign || formData.circuitDiagram) {
-        const deleteResponse = await fetch(deleteUrl, {
-          method: "DELETE",
-        });
-
-        if (!deleteResponse.ok) {
-          console.error("ファイルの削除に失敗しました。");
-          return;
-        }
-      }
-
       // PCBデザインと回路図のアップロード
       const uploadData = new FormData();
       if (formData.pcbDesign)
@@ -76,31 +65,60 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       const uploadResult = await uploadResponse.json();
       console.log("アップロード成功:", uploadResult);
 
-      // DBに登録するデータを作成
+      // 既存PCBデザインと回路図の削除
+      if (formData.pcbDesign || formData.circuitDiagram) {
+        // 画像を削除するデータを作成
+        const deleteData = {
+          boardId: board.boardId,
+          boardImgPathFlg: !!formData.pcbDesign,
+          diagramImgPathFlg: !!formData.circuitDiagram,
+        };
+
+        const deleteResponse = await fetch(deleteUrl, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(deleteData),
+        });
+        console.log("deleteResponse: ", deleteResponse);
+
+        if (!deleteResponse.ok) {
+          console.error("ファイルの削除に失敗しました。");
+          return;
+        }
+      }
+
+      // DBを更新するデータを作成
       const boardData = {
+        boardId: board.boardId,
         boardName: formData.boardName,
         structure: formData.structure,
         stencil: formData.stencil,
-        boardImgPath: uploadResult.pcbDesign ? uploadResult.pcbDesign.path : "",
+        boardImgPath: uploadResult.pcbDesign
+          ? uploadResult.pcbDesign.path
+          : board.boardImgPath,
         diagramImgPath: uploadResult.circuitDiagram
           ? uploadResult.circuitDiagram.path
-          : "",
+          : board.diagramImgPath,
       };
+
+      console.log("boardData: ", boardData);
 
       // DBにリクエスト
       const saveResponse = await fetch(saveUrl, {
-        method: "POST",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(boardData),
       });
+
+      console.log("saveResponse: ", saveResponse);
 
       const responseData = await saveResponse.json();
       const boardId: number = responseData[0]?.board_id;
 
       if (saveResponse.ok) {
-        console.log("登録成功");
+        console.log("更新成功");
       } else {
-        console.error("DB登録に失敗しました。");
+        console.error("DB更新に失敗しました。");
       }
 
       // CSVファイルの処理
@@ -193,14 +211,22 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
             <h1 className="font-bold mb-1">PCBデザイン</h1>
             <Input
               type="file"
-              className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 w-full max-w-md"
+              accept="image/jpeg, image/png, image/svg+xml, image/bmp"
+              className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 mb-3 w-full max-w-md"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange("pcbDesign", e.target.files?.[0] || null)
+              }
             />
           </div>
           <div>
             <h1 className="font-bold mb-1">回路図</h1>
             <Input
               type="file"
-              className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 w-full max-w-md"
+              accept="image/jpeg, image/png, image/svg+xml, image/bmp"
+              className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 mb-3 w-full max-w-md"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange("circuitDiagram", e.target.files?.[0] || null)
+              }
             />
           </div>
         </div>
@@ -233,6 +259,9 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
           type="file"
           className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 w-full max-w-md"
           accept=".csv"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            handleChange("csvFile", e.target.files?.[0] || null)
+          }
         />
       </div>
       <div className="bg-base-300 rounded-box mt-3 p-3">

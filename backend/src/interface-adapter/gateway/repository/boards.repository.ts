@@ -14,7 +14,7 @@ export class BoardRepository implements IBoardRepository {
     private readonly driver: ISqlDriver,
   ) {}
 
-  async findById(id: string): Promise<IBoard> {
+  async findById(id: number): Promise<IBoard> {
     return await this.driver.select(`
       SELECT board_id, board_name, structure, stencil, diagram_img_path, board_img_path
       FROM boards
@@ -44,13 +44,13 @@ export class BoardRepository implements IBoardRepository {
 
   async update(board: IBoard): Promise<IBoard> {
     return await this.driver.update(`
-      UPDATE boards SET board_name = '${board.boardName}', structure = ${board.structure}, stencil = ${board.stencil}, diagram_img_path = ${board.diagramImgPath}, board_img_path = ${board.boardImgPath}, updated_at = CURRENT_TIMESTAMP
+      UPDATE boards SET board_name = '${board.boardName}', structure = '${board.structure}', stencil = '${board.stencil}', diagram_img_path = '${board.diagramImgPath}', board_img_path = '${board.boardImgPath}', updated_at = CURRENT_TIMESTAMP
       WHERE board_id = ${board.boardId}
       returning *
       `);
   }
 
-  async delete(id: string): Promise<IBoard> {
+  async delete(id: number): Promise<IBoard> {
     return await this.driver.delete(`
       DELETE FROM boards
       WHERE board_id = ${id}

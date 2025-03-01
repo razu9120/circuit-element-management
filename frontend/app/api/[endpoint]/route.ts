@@ -51,7 +51,7 @@ export const POST = async (
   }
 };
 
-export const PUT = async (
+export const PATCH = async (
   req: Request,
   props: { params: Promise<{ endpoint: string }> }
 ) => {
@@ -63,12 +63,13 @@ export const PUT = async (
     const requestBody = await req.json();
 
     const response = await fetch(backendUrl, {
-      method: "PUT",
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(requestBody),
     });
+    console.log("response: ", response);
 
     const data = await response.json();
     return NextResponse.json(data); // バックエンドのレスポンスをそのまま返す

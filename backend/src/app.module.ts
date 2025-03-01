@@ -13,6 +13,8 @@ import { ElementUseCase } from './usecase/element.usecase';
 import { ElementController } from './interface-adapter/controller/element.controller';
 import { UploadController } from './interface-adapter/controller/upload.controller';
 import { ImageController } from './interface-adapter/controller/image.controller';
+import { ImageUseCase } from './usecase/image.usecase';
+import { ImageEntity } from './domain/image.entity';
 
 @Module({
   imports: [RepositoryModule],
@@ -38,9 +40,14 @@ import { ImageController } from './interface-adapter/controller/image.controller
       provide: 'IElementUseCase',
       useClass: ElementUseCase,
     },
+    {
+      provide: 'IImageUseCase',
+      useClass: ImageUseCase,
+    },
     ProductEntity,
     BoardEntity,
     ElementEntity,
+    ImageEntity,
   ],
 })
 export class AppModule {}

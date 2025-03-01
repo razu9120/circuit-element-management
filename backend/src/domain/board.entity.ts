@@ -17,11 +17,11 @@ export interface IBoardHasElements extends IBoard {
 }
 
 export interface IBoardRepository {
-  findById(id: string): Promise<IBoard>;
+  findById(id: number): Promise<IBoard>;
   findAll(): Promise<IBoardHasElements[]>;
   create(board: IBoardCreate): Promise<IBoard>;
   update(board: IBoardCreate): Promise<IBoard>;
-  delete(id: string): Promise<IBoard>;
+  delete(id: number): Promise<IBoard>;
 }
 
 @Injectable()
@@ -69,7 +69,7 @@ export class BoardEntity {
     return await this.boardRepository.findAll();
   }
 
-  async getBoardById(id: string): Promise<IBoard> {
+  async getBoardById(id: number): Promise<IBoard> {
     return await this.boardRepository.findById(id);
   }
 
@@ -81,7 +81,7 @@ export class BoardEntity {
     return await this.boardRepository.update(board);
   }
 
-  async deleteBoard(id: string): Promise<IBoard> {
+  async deleteBoard(id: number): Promise<IBoard> {
     return await this.boardRepository.delete(id);
   }
 }

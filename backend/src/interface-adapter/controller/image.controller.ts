@@ -1,9 +1,24 @@
-import { Controller, Get, Param, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Patch,
+  Res,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { join } from 'path';
+import { IDeleteImage, IImage } from 'src/domain/image.entity';
+import { IImageUseCase } from 'src/usecase/image.usecase';
 
 @Controller('backend/v1/images')
 export class ImageController {
+  constructor(
+    @Inject('IImageUseCase')
+    private readonly imageUseCase: IImageUseCase,
+  ) {}
+
   @Get('/pcbDesign/:filename')
   async getPcbDesignImage(
     @Param('filename') filename: string,
@@ -20,5 +35,11 @@ export class ImageController {
   ) {
     const filePath = join(process.cwd(), 'uploads/circuitDiagram', filename);
     return res.sendFile(filePath);
+  }
+
+  @Patch()
+  userDeleteImage(@Body() deleteData: IDeleteImage): Promise<IImage> {
+    console.log('controller: ', deleteData);
+    return this.imageUseCase.userDeleteImage(deleteData);
   }
 }
