@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import RadioButton from "@/app/components/radioButton";
 import Button from "@/app/components/button";
 import { useMenu } from "@/app/contexts/menuContext";
@@ -24,15 +25,17 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const { setMenuId } = useMenu();
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
+  const [updatedBoard, setUpdatedBoard] = useState<IBoard>(board);
   // const [selectedItem, setSelectedItem] = useState<{ name: string; product: string }>({ name: "", product: "" });
   const [formData, setFormData] = useState({
-    boardName: board.boardName,
-    structure: board.structure,
-    stencil: board.stencil.toString(),
+    boardName: updatedBoard.boardName,
+    structure: updatedBoard.structure,
+    stencil: updatedBoard.stencil.toString(),
     pcbDesign: null as File | null,
     circuitDiagram: null as File | null,
     csvFile: null as File | null,
   });
+  const [formKey, setFormKey] = useState(0);
 
   const handleChange = (field: string, value: string | File | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -69,7 +72,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       if (formData.pcbDesign || formData.circuitDiagram) {
         // 画像を削除するデータを作成
         const deleteData = {
-          boardId: board.boardId,
+          boardId: updatedBoard.boardId,
           boardImgPathFlg: !!formData.pcbDesign,
           diagramImgPathFlg: !!formData.circuitDiagram,
         };
@@ -89,16 +92,16 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
 
       // DBを更新するデータを作成
       const boardData = {
-        boardId: board.boardId,
+        boardId: updatedBoard.boardId,
         boardName: formData.boardName,
         structure: formData.structure,
         stencil: formData.stencil,
         boardImgPath: uploadResult.pcbDesign
           ? uploadResult.pcbDesign.path
-          : board.boardImgPath,
+          : updatedBoard.boardImgPath,
         diagramImgPath: uploadResult.circuitDiagram
           ? uploadResult.circuitDiagram.path
-          : board.diagramImgPath,
+          : updatedBoard.diagramImgPath,
       };
 
       console.log("boardData: ", boardData);
@@ -142,14 +145,11 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
         }
       }
 
-      setFormData({
-        boardName: "",
-        structure: "1",
-        stencil: "false",
-        pcbDesign: null,
-        circuitDiagram: null,
-        csvFile: null,
-      });
+      await fetchUpdatedBoard(board.boardId);
+
+      setFormKey((prev) => prev + 1);
+
+      Redirect(`/boardList/${board.boardId}/boardDetail/editBoard`);
 
       // setFormKey((prev) => prev + 1);
     } catch (error) {
@@ -170,6 +170,24 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
         footprint: values[2],
       };
     });
+  };
+
+  const fetchUpdatedBoard = async (boardId: number) => {
+    const response = await fetch(`http://localhost:3001/api/boards/${boardId}`);
+    if (response.ok) {
+      const updatedData = await response.json();
+      setUpdatedBoard(updatedData); // 状態を更新
+      setFormData({
+        boardName: updatedData.boardName,
+        structure: updatedData.structure,
+        stencil: updatedData.stencil.toString(),
+        pcbDesign: null,
+        circuitDiagram: null,
+        csvFile: null,
+      });
+    } else {
+      console.error("更新後のデータ取得に失敗しました。");
+    }
   };
 
   const Redirect = (route: string) => {
@@ -204,32 +222,65 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   ));
 
   return (
-    <>
+    <div key={formKey}>
       <div className="flex flex-col bg-base-300 rounded-box p-3">
-        <div className="flex flex-col md:flex-row gap-3">
-          <div>
+        <div className="flex flex-col md:flex-row gap-3 items-stretch">
+          <div className="flex flex-col">
             <h1 className="font-bold mb-1">PCBデザイン</h1>
-            <Input
-              type="file"
-              accept="image/jpeg, image/png, image/svg+xml, image/bmp"
-              className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 mb-3 w-full max-w-md"
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange("pcbDesign", e.target.files?.[0] || null)
+            <Image
+              src={
+                updatedBoard.boardImgPath === ""
+                  ? "/no_image3.png"
+                  : `/api/images/pcbDesign/${updatedBoard.boardImgPath.replace(
+                      "/uploads/pcbDesign/",
+                      ""
+                    )}`
               }
+              alt="PCB Design"
+              width={500}
+              height={400}
+              className="rounded-box w-[300px] md:w-[346px] object-cover"
             />
+            <div className="flex-1 flex items-end">
+              <Input
+                type="file"
+                accept="image/jpeg, image/png, image/svg+xml, image/bmp"
+                className="file-input file-input-xs md:file-input-lg file-input-bordered mt-2 w-full max-w-md"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleChange("pcbDesign", e.target.files?.[0] || null)
+                }
+              />
+            </div>
           </div>
-          <div>
+          <div className="flex flex-col">
             <h1 className="font-bold mb-1">回路図</h1>
-            <Input
-              type="file"
-              accept="image/jpeg, image/png, image/svg+xml, image/bmp"
-              className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 mb-3 w-full max-w-md"
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange("circuitDiagram", e.target.files?.[0] || null)
+            <Image
+              src={
+                updatedBoard.diagramImgPath === ""
+                  ? "/no_image3.png"
+                  : `/api/images/circuitDiagram/${updatedBoard.diagramImgPath.replace(
+                      "/uploads/circuitDiagram/",
+                      ""
+                    )}`
               }
+              alt="PCB Design"
+              width={500}
+              height={400}
+              className="rounded-box w-[300px] md:w-[346px] object-cover"
             />
+            <div className="flex-1 flex items-end">
+              <Input
+                type="file"
+                accept="image/jpeg, image/png, image/svg+xml, image/bmp"
+                className="file-input file-input-xs md:file-input-lg file-input-bordered mt-2 w-full max-w-md"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleChange("circuitDiagram", e.target.files?.[0] || null)
+                }
+              />
+            </div>
           </div>
         </div>
+
         <h1 className="font-bold mt-3 mb-1">名前</h1>
         <Input
           type="text"
@@ -336,7 +387,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

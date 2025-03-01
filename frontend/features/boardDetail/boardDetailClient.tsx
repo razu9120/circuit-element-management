@@ -85,7 +85,7 @@ const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
               <h1 className="font-bold mt-2 mb-1">回路図</h1>
               <Image
                 src={
-                  board.boardImgPath === ""
+                  board.diagramImgPath === ""
                     ? "/no_image3.png"
                     : `/api/images/circuitDiagram/${board.diagramImgPath.replace(
                         "/uploads/circuitDiagram/",
@@ -123,7 +123,7 @@ const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
                 <h1 className="font-bold mt-2 mb-1">回路図</h1>
                 <Image
                   src={
-                    board.boardImgPath === ""
+                    board.diagramImgPath === ""
                       ? "/no_image3.png"
                       : `/api/images/circuitDiagram/${board.diagramImgPath.replace(
                           "/uploads/circuitDiagram/",
@@ -137,7 +137,7 @@ const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
                 />
               </div>
             </div>
-            <h1 className="font-bold mt-2 mb-2">名前</h1>
+            <h1 className="font-bold mt-2 mb-1">名前</h1>
             <div>{board.boardName}</div>
             <h1 className="font-bold mt-5">構造</h1>
             <RadioButton
