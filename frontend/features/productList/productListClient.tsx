@@ -1,48 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/app/components/button";
 import { useMenu } from "@/app/contexts/menuContext";
+import { IProductList } from "./productList";
 
-const ProductDetailClient = () => {
+interface IProductListClientProps {
+  productList: IProductList[];
+}
+
+const ProductListClient: React.FC<IProductListClientProps> = ({
+  productList,
+}) => {
   const router = useRouter();
   const { setMenuId } = useMenu();
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
+  // const [updatedProductList, setUpdatedProductList] = useState<IProductList[]>(productList);
 
   const Redirect = (route: string) => {
     router.push(route);
   };
 
+  const products = productList.map((product) => (
+    <div
+      key={product.productId}
+      className="flex bg-base-100 rounded-box w-[1000px] md:w-full mb-2 p-3"
+    >
+      {product.dataSheetPath ? (
+        <Button
+          label="データシート"
+          className="btn btn-xs btn-warning w-24 mr-3"
+        />
+      ) : (
+        <Button
+          label="データシート"
+          className="btn btn-xs btn-warning w-24 mr-3"
+          disabled
+        />
+      )}
+      <Button
+        label="編集"
+        className="btn btn-xs btn-primary w-12 mr-5"
+        onClick={() => {
+          setEditModalOpen(true);
+        }}
+      />
+      <h1 className="font-bold">{product.productName}</h1>
+    </div>
+  ));
+
   return (
     <>
-      {/* <div className="flex flex-col bg-base-300 rounded-box p-3"></div> */}
+      {/* <div className="flex flex-col bg-base-300 rounded-box p-3">ソートとか</div> */}
       <div className="bg-base-300 rounded-box mt-3 p-3">
-        <div className="h-[550px] overflow-y-auto">
-          {Array.from({ length: 10 }).map((_, index) => (
-            <div
-              key={index}
-              className="flex bg-base-100 rounded-box w-[1000px] md:w-full mt-2 p-3"
-            >
-              <Button
-                label="データシート"
-                className="btn btn-xs btn-warning w-24 mr-3"
-              />
-              <Button
-                label="編集"
-                className="btn btn-xs btn-primary w-12 mr-5"
-                onClick={() => {
-                  setEditModalOpen(true);
-                }}
-              />
-              <h1 className="font-bold">R1</h1>
-              <h1 className="font-bold ml-5">20Ω</h1>
-              <h1 className="font-bold ml-5">
-                Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder
-              </h1>
-            </div>
-          ))}
-        </div>
+        <div className="h-[550px] overflow-y-auto">{products}</div>
       </div>
 
       <div className="flex justify-center mt-3">
@@ -101,4 +113,4 @@ const ProductDetailClient = () => {
   );
 };
 
-export default ProductDetailClient;
+export default ProductListClient;

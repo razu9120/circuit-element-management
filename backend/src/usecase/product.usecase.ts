@@ -5,6 +5,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { camelCase } from 'lodash';
 import {
   IProduct,
   IProductCreate,
@@ -29,7 +30,15 @@ export class ProductUseCase {
   async userGetProducts(): Promise<IProduct[]> {
     try {
       const result = await this.productEntity.getAllProducts();
-      return result;
+
+      // スネークケースをキャメルケースに変換
+      const camelCaseResult = result.map((board) =>
+        Object.fromEntries(
+          Object.entries(board).map(([key, value]) => [camelCase(key), value]),
+        ),
+      );
+
+      return camelCaseResult as IProduct[];
     } catch (e: unknown) {
       if (e instanceof Error) {
         throw new HttpException(
