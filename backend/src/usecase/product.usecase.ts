@@ -77,8 +77,8 @@ export class ProductUseCase {
   async userCreateProduct(productCreate: IProductCreate): Promise<IProduct> {
     const { productName, dataSheetPath } = productCreate;
 
-    if (!productName || !dataSheetPath) {
-      throw new BadRequestException('Name and price are required');
+    if (!productName) {
+      throw new BadRequestException('製品名は必須です。');
     }
     try {
       const newProduct = this.productEntity.newProduct(

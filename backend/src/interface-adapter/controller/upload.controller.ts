@@ -17,11 +17,14 @@ export class UploadController {
       storage: diskStorage({
         destination: (req: Request, file, callback) => {
           let uploadPath = './uploads';
+          console.log('file.fieldname: ', file.fieldname);
 
           if (file.fieldname === 'pcbDesign') {
             uploadPath += '/pcbDesign';
           } else if (file.fieldname === 'circuitDiagram') {
             uploadPath += '/circuitDiagram';
+          } else if (file.fieldname === 'dataSheetPdf') {
+            uploadPath += '/dataSheetPdf';
           }
 
           callback(null, uploadPath);
