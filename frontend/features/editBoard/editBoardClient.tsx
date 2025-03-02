@@ -26,6 +26,8 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
   const [updatedBoard, setUpdatedBoard] = useState<IBoard>(board);
+  const [updatedElements, setUpdatedElements] =
+    useState<IElementAndBoard[]>(elements);
   // const [selectedItem, setSelectedItem] = useState<{ name: string; product: string }>({ name: "", product: "" });
   const [formData, setFormData] = useState({
     boardName: updatedBoard.boardName,
@@ -147,12 +149,9 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       }
 
       await fetchUpdatedBoard(board.boardId);
+      await fetchUpdatedElements();
 
       setFormKey((prev) => prev + 1);
-
-      Redirect(`/boardList/${board.boardId}/boardDetail/editBoard`);
-
-      // setFormKey((prev) => prev + 1);
     } catch (error) {
       console.error("通信エラー:", error);
     }
@@ -177,7 +176,6 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     const response = await fetch(`http://localhost:3001/api/boards/${boardId}`);
     if (response.ok) {
       const updatedData = await response.json();
-      setUpdatedBoard(updatedData); // 状態を更新
       setFormData({
         boardName: updatedData.boardName,
         structure: updatedData.structure,
@@ -186,9 +184,19 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
         circuitDiagram: null,
         csvFile: null,
       });
+      setUpdatedBoard(updatedData);
     } else {
       console.error("更新後のデータ取得に失敗しました。");
     }
+  };
+
+  const fetchUpdatedElements = async () => {
+    const getResponse = await fetch(
+      `http://localhost:3001/api/elements/board/${board.boardId}`
+    );
+
+    const newElements = await getResponse.json();
+    setUpdatedElements(newElements);
   };
 
   const handleDeleteModalOpen = (elementId: number) => {
@@ -207,6 +215,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       const errorData = await deleteResponse.json();
       throw new Error(errorData.messageCode || "エラーが発生しました");
     }
+    await fetchUpdatedElements();
     setDeleteModalOpen(false);
   };
 
@@ -214,7 +223,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     router.push(route);
   };
 
-  const elementList = elements.map((element) => (
+  const elementList = updatedElements.map((element) => (
     <div
       key={element.elementId}
       className="flex bg-base-100 rounded-box w-[1000px] md:w-full mt-2 p-3"
