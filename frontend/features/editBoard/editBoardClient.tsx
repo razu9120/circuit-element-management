@@ -23,7 +23,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
 }) => {
   const router = useRouter();
   const { setMenuId } = useMenu();
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
   const [updatedBoard, setUpdatedBoard] = useState<IBoard>(board);
   // const [selectedItem, setSelectedItem] = useState<{ name: string; product: string }>({ name: "", product: "" });
@@ -36,6 +36,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     csvFile: null as File | null,
   });
   const [formKey, setFormKey] = useState(0);
+  const [elementId, setElementId] = useState<number>(0);
 
   const handleChange = (field: string, value: string | File | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -190,6 +191,25 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     }
   };
 
+  const handleDeleteModalOpen = (elementId: number) => {
+    setElementId(elementId);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteElement = async () => {
+    const deleteResponse = await fetch(
+      `http://localhost:3001/api/elements/${elementId}`,
+      {
+        method: "DELETE",
+      }
+    );
+    if (!deleteResponse.ok) {
+      const errorData = await deleteResponse.json();
+      throw new Error(errorData.messageCode || "エラーが発生しました");
+    }
+    setDeleteModalOpen(false);
+  };
+
   const Redirect = (route: string) => {
     router.push(route);
   };
@@ -210,7 +230,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       <Button
         label="削除"
         className="btn btn-xs btn-secondary w-12 mr-5"
-        onClick={() => setModalOpen(true)}
+        onClick={() => handleDeleteModalOpen(element.elementId)}
       />
       <h1 className="font-bold">{element.reference}</h1>
       {element.productName && (
@@ -315,12 +335,6 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
           }
         />
       </div>
-      <div className="bg-base-300 rounded-box mt-3 p-3">
-        <h1 className="font-bold bg-base-300 mb-2 sticky top-0 z-5">素子</h1>
-        <div className="h-64 md:h-72 lg:h-[465px] overflow-y-auto">
-          {elementList}
-        </div>
-      </div>
 
       <div className="flex justify-center mt-3">
         <Button
@@ -338,12 +352,19 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
         />
       </div>
 
+      <div className="bg-base-300 rounded-box mt-9 p-3">
+        <h1 className="font-bold bg-base-300 mb-2 sticky top-0 z-5">素子</h1>
+        <div className="h-64 md:h-72 lg:h-[465px] overflow-y-auto">
+          {elementList}
+        </div>
+      </div>
+
       <ConfirmModal
-        isOpen={modalOpen}
+        isOpen={deleteModalOpen}
         title="素子削除"
         body="本当に削除しますか？"
-        onConfirm={() => setModalOpen(false)}
-        onCancel={() => setModalOpen(false)}
+        onConfirm={() => handleDeleteElement()}
+        onCancel={() => setDeleteModalOpen(false)}
       />
 
       {editModalOpen && (

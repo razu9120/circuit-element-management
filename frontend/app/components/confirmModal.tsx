@@ -24,11 +24,11 @@ const ConfirmModal: React.FC<IConfirmProps> = ({
           <h2 className="text-lg font-bold">{title}</h2>
           <p className="py-4">{body}</p>
           <div className="modal-action">
-            <button className="btn btn-outline btn-primary" onClick={onConfirm}>
-              はい
-            </button>
             <button className="btn btn-secondary" onClick={onCancel}>
               キャンセル
+            </button>
+            <button className="btn btn-outline btn-primary" onClick={onConfirm}>
+              はい
             </button>
           </div>
         </div>
