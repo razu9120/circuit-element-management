@@ -13,7 +13,7 @@ export class ProductRepository implements IProductRepository {
     private readonly driver: ISqlDriver,
   ) {}
 
-  async findById(id: string): Promise<IProduct> {
+  async findById(id: number): Promise<IProduct> {
     return await this.driver.select(
       `SELECT product_id, product_name, data_sheet_path FROM products WHERE product_id = ${id} ORDER BY product_id`,
     );
@@ -35,13 +35,13 @@ export class ProductRepository implements IProductRepository {
 
   async update(product: IProduct): Promise<IProduct> {
     return await this.driver.update(`
-      UPDATE products SET product_name = '${product.productName}', data_sheet_path = ${product.dataSheetPath}, updated_at = CURRENT_TIMESTAMP
-      WHERE product_id = ${product.productId}
+      UPDATE products SET product_name = '${product.productName}', data_sheet_path = '${product.dataSheetPath}', updated_at = CURRENT_TIMESTAMP
+      WHERE product_id = '${product.productId}'
       returning *
       `);
   }
 
-  async delete(id: string): Promise<IProduct> {
+  async delete(id: number): Promise<IProduct> {
     return await this.driver.delete(`
       DELETE FROM products
       WHERE product_id = ${id}

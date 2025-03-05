@@ -1,6 +1,6 @@
 import ProductListClient from "./productListClient";
 
-export interface IProductList {
+export interface IProduct {
   productId: number;
   productName: string;
   dataSheetPath: string;
@@ -19,7 +19,7 @@ const fetchProducts = async () => {
 
 const ProductList = async () => {
   try {
-    const productList: IProductList[] = await fetchProducts();
+    const productList: IProduct[] = await fetchProducts();
     console.log("productList: ", productList);
     return <ProductListClient productList={productList} />;
   } catch (error) {

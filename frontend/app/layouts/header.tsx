@@ -74,7 +74,7 @@ const Header = () => {
               Redirect("/");
             }}
           >
-            daisyUI
+            TEST
           </a>
         </div>
         <label className="grid cursor-pointer place-items-center">

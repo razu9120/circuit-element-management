@@ -26,7 +26,6 @@ const RegistProductClient = () => {
     try {
       // PCBデザインと回路図のアップロード
       const uploadData = new FormData();
-      console.log("formData.dataSheetPdf: ", formData.dataSheetPdf);
       if (formData.dataSheetPdf) {
         uploadData.append("dataSheetPdf", formData.dataSheetPdf);
       }

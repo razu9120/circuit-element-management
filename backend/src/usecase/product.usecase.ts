@@ -14,10 +14,10 @@ import {
 
 export interface IProductUseCase {
   userGetProducts(): Promise<IProduct[]>;
-  userGetProductById(productId: string): Promise<IProduct>;
+  userGetProductById(productId: number): Promise<IProduct>;
   userCreateProduct(productCreate: IProductCreate): Promise<IProduct>;
   userUpdateProduct(product: IProduct): Promise<IProduct>;
-  userDeleteProduct(productId: string): Promise<IProduct>;
+  userDeleteProduct(productId: number): Promise<IProduct>;
 }
 
 @Injectable()
@@ -59,10 +59,17 @@ export class ProductUseCase {
     }
   }
 
-  async userGetProductById(productId: string): Promise<IProduct> {
+  async userGetProductById(productId: number): Promise<IProduct> {
     try {
       const result = await this.productEntity.getProductById(productId);
-      return result;
+
+      const camelCaseResult: IProduct = {
+        productId: result[0].product_id,
+        productName: result[0].product_name,
+        dataSheetPath: result[0].data_sheet_path,
+      };
+
+      return camelCaseResult;
     } catch (e: unknown) {
       if (e instanceof Error) {
         throw new HttpException(
@@ -118,6 +125,7 @@ export class ProductUseCase {
   }
 
   async userUpdateProduct(product: IProduct): Promise<IProduct> {
+    console.log('product: ', product);
     const { productId, productName, dataSheetPath } = product;
 
     if (!productId || !productName || !dataSheetPath) {
@@ -130,8 +138,10 @@ export class ProductUseCase {
         productName,
         dataSheetPath,
       );
+      console.log('updProduct: ', updProduct);
 
       const result = await this.productEntity.updateProduct(updProduct);
+      console.log('result: ', result);
       return result;
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -153,7 +163,7 @@ export class ProductUseCase {
     }
   }
 
-  async userDeleteProduct(productId: string): Promise<IProduct> {
+  async userDeleteProduct(productId: number): Promise<IProduct> {
     try {
       const result = await this.productEntity.deleteProduct(productId);
       return result;

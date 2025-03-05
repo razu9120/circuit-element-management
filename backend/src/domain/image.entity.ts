@@ -12,5 +12,14 @@ export interface IDeleteImage {
   boardImgPathFlg: boolean;
 }
 
+export interface IPdf {
+  productId: number;
+  dataSheetPath: string;
+}
+
+export interface IDeletePdf {
+  productId: number;
+}
+
 @Injectable()
 export class ImageEntity {}

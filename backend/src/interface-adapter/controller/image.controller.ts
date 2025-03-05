@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { join } from 'path';
-import { IDeleteImage, IImage } from 'src/domain/image.entity';
+import {
+  IDeleteImage,
+  IDeletePdf,
+  IImage,
+  IPdf,
+} from 'src/domain/image.entity';
 import { IImageUseCase } from 'src/usecase/image.usecase';
 
 @Controller('backend/v1/images')
@@ -41,5 +46,11 @@ export class ImageController {
   userDeleteImage(@Body() deleteData: IDeleteImage): Promise<IImage> {
     console.log('controller: ', deleteData);
     return this.imageUseCase.userDeleteImage(deleteData);
+  }
+
+  @Patch('/pdf')
+  userDeletePdf(@Body() deleteData: IDeletePdf): Promise<IPdf> {
+    console.log('controller: ', deleteData);
+    return this.imageUseCase.userDeletePdf(deleteData);
   }
 }

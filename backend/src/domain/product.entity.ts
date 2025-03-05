@@ -10,11 +10,11 @@ export interface IProduct extends IProductCreate {
 }
 
 export interface IProductRepository {
-  findById(id: string): Promise<IProduct>;
+  findById(id: number): Promise<IProduct>;
   findAll(): Promise<IProduct[]>;
   create(product: IProductCreate): Promise<IProduct>;
-  update(product: IProductCreate): Promise<IProduct>;
-  delete(id: string): Promise<IProduct>;
+  update(product: IProduct): Promise<IProduct>;
+  delete(id: number): Promise<IProduct>;
 }
 
 @Injectable()
@@ -47,7 +47,7 @@ export class ProductEntity {
     return await this.productRepository.findAll();
   }
 
-  async getProductById(id: string): Promise<IProduct> {
+  async getProductById(id: number): Promise<IProduct> {
     return await this.productRepository.findById(id);
   }
 
@@ -55,11 +55,11 @@ export class ProductEntity {
     return await this.productRepository.create(product);
   }
 
-  async updateProduct(product: IProductCreate): Promise<IProduct> {
+  async updateProduct(product: IProduct): Promise<IProduct> {
     return await this.productRepository.update(product);
   }
 
-  async deleteProduct(id: string): Promise<IProduct> {
+  async deleteProduct(id: number): Promise<IProduct> {
     return await this.productRepository.delete(id);
   }
 }

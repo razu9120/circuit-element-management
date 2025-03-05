@@ -24,7 +24,7 @@ export class ProductController {
   }
 
   @Get(':productId')
-  userGetProductById(@Param('productId') productId: string): Promise<IProduct> {
+  userGetProductById(@Param('productId') productId: number): Promise<IProduct> {
     return this.productUseCase.userGetProductById(productId);
   }
 
@@ -39,7 +39,7 @@ export class ProductController {
   }
 
   @Delete(':productId')
-  userDeleteProduct(@Param('productId') productId: string): Promise<IProduct> {
+  userDeleteProduct(@Param('productId') productId: number): Promise<IProduct> {
     return this.productUseCase.userDeleteProduct(productId);
   }
 }
