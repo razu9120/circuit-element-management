@@ -128,6 +128,17 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
     }
   };
 
+  const displayDataSheetPdf = async (dataSheetPath: string) => {
+    window.open(
+      `http://localhost:3001/api/images/dataSheetPdf/${dataSheetPath.replace(
+        "/uploads/dataSheetPdf/",
+        ""
+      )}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
   const products = updatedProductList.map((product) => (
     <div
       key={product.productId}
@@ -137,6 +148,9 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
         <Button
           label="データシート"
           className="btn btn-xs btn-warning w-24 mr-3"
+          onClick={() => {
+            displayDataSheetPdf(product.dataSheetPath);
+          }}
         />
       ) : (
         <Button

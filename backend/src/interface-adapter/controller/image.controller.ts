@@ -3,10 +3,12 @@ import {
   Controller,
   Get,
   Inject,
+  NotFoundException,
   Param,
   Patch,
   Res,
 } from '@nestjs/common';
+import * as fs from 'fs';
 import { Response } from 'express';
 import { join } from 'path';
 import {
@@ -46,6 +48,21 @@ export class ImageController {
   userDeleteImage(@Body() deleteData: IDeleteImage): Promise<IImage> {
     console.log('controller: ', deleteData);
     return this.imageUseCase.userDeleteImage(deleteData);
+  }
+
+  @Get('/pdf/:filename')
+  async getDataSheetPdf(
+    @Param('filename') filename: string,
+    @Res() res: Response,
+  ) {
+    const filePath = join(process.cwd(), 'uploads/dataSheetPdf', filename);
+    if (!fs.existsSync(filePath)) {
+      throw new NotFoundException('File not found');
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline'); // ブラウザで表示（ダウンロードなら `attachment`）
+    res.sendFile(filePath);
   }
 
   @Patch('/pdf')
