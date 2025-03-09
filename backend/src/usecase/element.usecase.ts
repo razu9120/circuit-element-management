@@ -174,15 +174,8 @@ export class ElementUseCase {
     const { elementId, boardId, productId, reference, content, footprint } =
       element;
 
-    if (
-      !elementId ||
-      !boardId ||
-      !productId ||
-      !reference ||
-      !content ||
-      !footprint
-    ) {
-      throw new BadRequestException('Id and Name and price are required');
+    if (!elementId) {
+      throw new BadRequestException('Idは必須です。');
     }
 
     try {
@@ -195,8 +188,14 @@ export class ElementUseCase {
         footprint,
       );
 
-      const result = await this.elementEntity.updateElement(updElement);
-      return result;
+      if (updElement.productId === 0) {
+        const result =
+          await this.elementEntity.updateElementUnlinking(updElement);
+        return result;
+      } else {
+        const result = await this.elementEntity.updateElement(updElement);
+        return result;
+      }
     } catch (e: unknown) {
       if (e instanceof Error) {
         throw new HttpException(

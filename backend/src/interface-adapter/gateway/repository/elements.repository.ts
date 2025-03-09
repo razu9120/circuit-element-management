@@ -24,7 +24,7 @@ export class ElementRepository implements IElementRepository {
 
   async findByBoardId(id: number): Promise<IElementAndBoard[]> {
     return await this.driver.select(`
-      SELECT T1.element_id, T1.reference, T1.content, T1.footprint, T2.product_name, T2.data_sheet_path
+      SELECT T1.element_id, T1.reference, T1.content, T1.footprint, T2.product_id, T2.product_name, T2.data_sheet_path
       FROM elements T1
       LEFT OUTER JOIN products T2
       ON T1.product_id = T2.product_id
@@ -41,8 +41,16 @@ export class ElementRepository implements IElementRepository {
 
   async update(element: IElement): Promise<IElement> {
     return await this.driver.update(`
-      UPDATE elements SET board_id = '${element.boardId}', product_id = ${element.productId}, reference = ${element.reference}, content = ${element.content}, footprint = ${element.footprint}, updated_at = CURRENT_TIMESTAMP
-      WHERE element_id = ${element.elementId}
+      UPDATE elements SET board_id = '${element.boardId}', product_id = '${element.productId}', reference = '${element.reference}', content = '${element.content}', footprint = '${element.footprint}', updated_at = CURRENT_TIMESTAMP
+      WHERE element_id = '${element.elementId}'
+      returning *
+      `);
+  }
+
+  async updateUnlinking(element: IElement): Promise<IElement> {
+    return await this.driver.update(`
+      UPDATE elements SET board_id = '${element.boardId}', product_id = NULL, reference = '${element.reference}', content = '${element.content}', footprint = '${element.footprint}', updated_at = CURRENT_TIMESTAMP
+      WHERE element_id = '${element.elementId}'
       returning *
       `);
   }

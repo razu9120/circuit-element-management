@@ -5,9 +5,7 @@ export const GET = async (
   props: { params: Promise<{ endpoint: string }> }
 ) => {
   const params = await props.params;
-  console.log("params: ", params);
   const { endpoint } = params;
-  console.log("endpoint: ", endpoint);
   const backendUrl = `http://localhost:3000/backend/v1/${endpoint}`;
 
   try {
@@ -71,7 +69,6 @@ export const PATCH = async (
       },
       body: JSON.stringify(requestBody),
     });
-    console.log("response: ", response);
 
     const data = await response.json();
     return NextResponse.json(data); // バックエンドのレスポンスをそのまま返す

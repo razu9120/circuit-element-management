@@ -125,7 +125,6 @@ export class ProductUseCase {
   }
 
   async userUpdateProduct(product: IProduct): Promise<IProduct> {
-    console.log('product: ', product);
     const { productId, productName, dataSheetPath } = product;
 
     if (!productId || !productName || !dataSheetPath) {
@@ -138,10 +137,8 @@ export class ProductUseCase {
         productName,
         dataSheetPath,
       );
-      console.log('updProduct: ', updProduct);
 
       const result = await this.productEntity.updateProduct(updProduct);
-      console.log('result: ', result);
       return result;
     } catch (e: unknown) {
       if (e instanceof Error) {

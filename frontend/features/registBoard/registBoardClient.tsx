@@ -83,8 +83,6 @@ const RegistBoardClient = () => {
         const csvText = await formData.csvFile.text();
         const jsonElements = csvToJson(csvText, boardId);
 
-        console.log("jsonElements:", jsonElements);
-
         // CSVデータの送信
         const csvResponse = await fetch(elementsUrl, {
           method: "POST",

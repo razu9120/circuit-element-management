@@ -20,7 +20,6 @@ const fetchProducts = async () => {
 const ProductList = async () => {
   try {
     const productList: IProduct[] = await fetchProducts();
-    console.log("productList: ", productList);
     return <ProductListClient productList={productList} />;
   } catch (error) {
     console.log(error);

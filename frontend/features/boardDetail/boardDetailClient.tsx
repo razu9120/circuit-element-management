@@ -24,6 +24,17 @@ const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
   const { setMenuId } = useMenu();
   const [isToggled, setIsToggled] = useState(false);
 
+  const displayDataSheetPdf = async (dataSheetPath: string) => {
+    window.open(
+      `http://localhost:3001/api/images/dataSheetPdf/${dataSheetPath.replace(
+        "/uploads/dataSheetPdf/",
+        ""
+      )}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
   const Redirect = (route: string) => {
     router.push(route);
   };
@@ -37,6 +48,9 @@ const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
         <Button
           label="データシート"
           className="btn btn-xs btn-warning w-24 mr-5"
+          onClick={() => {
+            displayDataSheetPdf(element.dataSheetPath);
+          }}
         />
       ) : (
         <Button
@@ -45,10 +59,12 @@ const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
           disabled
         />
       )}
-      <h1 className="font-bold">{element.reference}</h1>
       {element.productName && (
-        <h1 className="font-bold ml-5">{element.productName}</h1>
+        <h1 className="font-bold text-warning">{element.productName}</h1>
       )}
+      <h1 className={`font-bold ${element.productName ? "ml-5" : ""}`}>
+        {element.reference}
+      </h1>
       <h1 className="font-bold ml-5">{element.content}</h1>
       <h1 className="font-bold ml-5">{element.footprint}</h1>
     </div>
@@ -144,7 +160,6 @@ const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
               name="boardType"
               options={structureOptions}
               defaultValue={board.structure}
-              onChange={(value) => console.log(value)}
               disabled
             />
             <h1 className="font-bold mt-2">ステンシル</h1>
@@ -152,7 +167,6 @@ const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
               name="boardType1"
               options={stencilOptions}
               defaultValue={board.stencil ? "true" : "false"}
-              onChange={(value) => console.log(value)}
               disabled
             />
           </>

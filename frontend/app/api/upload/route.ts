@@ -10,7 +10,6 @@ export const POST = async (req: NextRequest) => {
     formData.forEach((value, key) => {
       formBody.append(key, value);
     });
-    console.log("formBody: ", formBody);
 
     const response = await fetch(backendUrl, {
       method: "POST",

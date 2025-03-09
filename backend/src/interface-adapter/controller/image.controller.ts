@@ -46,7 +46,6 @@ export class ImageController {
 
   @Patch()
   userDeleteImage(@Body() deleteData: IDeleteImage): Promise<IImage> {
-    console.log('controller: ', deleteData);
     return this.imageUseCase.userDeleteImage(deleteData);
   }
 
@@ -67,7 +66,6 @@ export class ImageController {
 
   @Patch('/pdf')
   userDeletePdf(@Body() deleteData: IDeletePdf): Promise<IPdf> {
-    console.log('controller: ', deleteData);
     return this.imageUseCase.userDeletePdf(deleteData);
   }
 }

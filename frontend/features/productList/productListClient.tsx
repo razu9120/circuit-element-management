@@ -70,7 +70,6 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(deleteData),
         });
-        console.log("deleteResponse: ", deleteResponse);
 
         if (!deleteResponse.ok) {
           console.error("ファイルの削除に失敗しました。");
@@ -87,16 +86,12 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
           : product.dataSheetPath,
       };
 
-      console.log("productData: ", productData);
-
       // DBにリクエスト
       const saveResponse = await fetch(saveUrl, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(productData),
       });
-
-      console.log("saveResponse: ", saveResponse);
 
       if (saveResponse.ok) {
         console.log("更新成功");
@@ -172,7 +167,6 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
   ));
 
   const fetchProduct = async (productId: number) => {
-    console.log("productId: ", productId);
     const response = await fetch(
       `http://localhost:3001/api/products/${productId}`
     );
@@ -181,7 +175,6 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
       throw new Error(errorData.messageCode || "エラーが発生しました");
     }
     const productData = await response.json();
-    console.log("fetchProduct.productData: ", productData);
     setProduct(productData);
     setFormData({
       productName: productData.productName ?? "",
@@ -191,7 +184,6 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
 
   const fetchUpdatedProducts = async () => {
     const getResponse = await fetch("http://localhost:3001/api/products");
-    console.log("getResponse: ", getResponse);
 
     const newProducts = await getResponse.json();
     setUpdatedProductList(newProducts);

@@ -50,7 +50,6 @@ const RegistProductClient = () => {
           ? uploadResult.dataSheetPdf.path
           : "",
       };
-      console.log("boardData: ", boardData);
 
       // DBにリクエスト
       const saveResponse = await fetch(saveUrl, {
@@ -58,7 +57,6 @@ const RegistProductClient = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(boardData),
       });
-      console.log("saveResponse: ", saveResponse);
 
       if (saveResponse.ok) {
         console.log("登録成功");

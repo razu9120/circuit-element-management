@@ -17,6 +17,7 @@ export interface IElementAndBoard {
   reference: string;
   content: string;
   footprint: string;
+  productId: number;
   productName: string;
   DataSheetPath: string;
 }
@@ -26,6 +27,7 @@ export interface IElementRepository {
   findByBoardId(id: number): Promise<IElementAndBoard[]>;
   create(element: IElementCreate): Promise<IElement>;
   update(element: IElementCreate): Promise<IElement>;
+  updateUnlinking(element: IElementCreate): Promise<IElement>;
   delete(id: number): Promise<IElement>;
 }
 
@@ -61,7 +63,7 @@ export class ElementEntity {
     return {
       elementId: elementId,
       boardId: boardId,
-      productId: productId,
+      productId: +productId,
       reference: reference,
       content: content,
       footprint: footprint,
@@ -82,6 +84,10 @@ export class ElementEntity {
 
   async updateElement(element: IElementCreate): Promise<IElement> {
     return await this.elementRepository.update(element);
+  }
+
+  async updateElementUnlinking(element: IElementCreate): Promise<IElement> {
+    return await this.elementRepository.updateUnlinking(element);
   }
 
   async deleteElement(id: number): Promise<IElement> {

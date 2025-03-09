@@ -15,8 +15,9 @@ export interface IElementAndBoard {
   reference: string;
   content: string;
   footprint: string;
+  productId: number;
   productName: string;
-  DataSheetPath: string;
+  dataSheetPath: string;
 }
 
 export interface IBoardDetailProps {

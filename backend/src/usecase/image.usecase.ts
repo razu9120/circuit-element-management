@@ -41,7 +41,6 @@ export class ImageUseCase {
 
     try {
       const getResult = await this.boardEntity.getBoardById(deleteData.boardId);
-      console.log('usecase getResult: ', getResult);
 
       const camelCaseGetResult: IImage = {
         boardId: getResult[0].board_id,
@@ -50,7 +49,6 @@ export class ImageUseCase {
       };
 
       const deleteFile = async (filePath: string) => {
-        console.log('usecase filePath: ', filePath);
         if (filePath) {
           const fullPath = path.join(__dirname, '../../', filePath);
           try {
@@ -92,17 +90,14 @@ export class ImageUseCase {
   }
 
   async userDeletePdf(deleteData: IDeletePdf): Promise<IPdf> {
-    console.log('usecase deleteData1: ', deleteData);
     if (!deleteData.productId) {
       throw new BadRequestException('Idは必須です。');
     }
-    console.log('usecase deleteData2: ', deleteData);
 
     try {
       const getResult = await this.productEntity.getProductById(
         deleteData.productId,
       );
-      console.log('usecase getResult: ', getResult);
 
       const camelCaseGetResult: IPdf = {
         productId: getResult[0].product_id,
@@ -110,7 +105,6 @@ export class ImageUseCase {
       };
 
       const deleteFile = async (filePath: string) => {
-        console.log('usecase filePath: ', filePath);
         if (filePath) {
           const fullPath = path.join(__dirname, '../../', filePath);
           try {

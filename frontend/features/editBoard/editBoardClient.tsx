@@ -10,16 +10,25 @@ import React, { useState } from "react";
 import ConfirmModal from "@/app/components/confirmModal";
 import { stencilOptions, structureOptions } from "@/app/constants/options";
 import { IBoard, IElementAndBoard } from "../boardDetail/boardDetail";
+import Select from "@/app/components/select";
+import { IProduct } from "../productList/productList";
 // import { Select } from "@/app/components/select";
 
 interface IEditBoardClientProps {
   board: IBoard;
   elements: IElementAndBoard[];
+  productList: IProduct[];
+}
+
+interface IProductOptions {
+  value: number;
+  label: string;
 }
 
 const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   board,
   elements,
+  productList,
 }) => {
   const router = useRouter();
   const { setMenuId } = useMenu();
@@ -28,7 +37,6 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const [updatedBoard, setUpdatedBoard] = useState<IBoard>(board);
   const [updatedElements, setUpdatedElements] =
     useState<IElementAndBoard[]>(elements);
-  // const [selectedItem, setSelectedItem] = useState<{ name: string; product: string }>({ name: "", product: "" });
   const [formData, setFormData] = useState({
     boardName: updatedBoard.boardName,
     structure: updatedBoard.structure,
@@ -37,11 +45,26 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     circuitDiagram: null as File | null,
     csvFile: null as File | null,
   });
+  const [modalFormData, setModalFormData] = useState({
+    elementId: 0,
+    reference: "",
+    content: "",
+    footprint: "",
+    productId: 0,
+  });
   const [formKey, setFormKey] = useState(0);
   const [elementId, setElementId] = useState<number>(0);
 
+  const productOptions: IProductOptions[] = productList.map((product) => {
+    return { value: product.productId, label: product.productName };
+  });
+
   const handleChange = (field: string, value: string | File | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleModalChange = (field: string, value: string | File | null) => {
+    setModalFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
@@ -85,7 +108,6 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(deleteData),
         });
-        console.log("deleteResponse: ", deleteResponse);
 
         if (!deleteResponse.ok) {
           console.error("ファイルの削除に失敗しました。");
@@ -107,16 +129,12 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
           : updatedBoard.diagramImgPath,
       };
 
-      console.log("boardData: ", boardData);
-
       // DBにリクエスト
       const saveResponse = await fetch(saveUrl, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(boardData),
       });
-
-      console.log("saveResponse: ", saveResponse);
 
       const responseData = await saveResponse.json();
       const boardId: number = responseData[0]?.board_id;
@@ -131,8 +149,6 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       if (formData.csvFile) {
         const csvText = await formData.csvFile.text();
         const jsonElements = csvToJson(csvText, boardId);
-
-        console.log("jsonElements:", jsonElements);
 
         // CSVデータの送信
         const csvResponse = await fetch(elementsUrl, {
@@ -155,6 +171,32 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     } catch (error) {
       console.error("通信エラー:", error);
     }
+  };
+
+  const handleModalSubmit = async () => {
+    const elementData = {
+      elementId: modalFormData.elementId,
+      boardId: board.boardId,
+      productId: modalFormData.productId,
+      reference: modalFormData.reference,
+      content: modalFormData.content,
+      footprint: modalFormData.footprint,
+    };
+
+    // DBにリクエスト
+    const saveResponse = await fetch("http://localhost:3001/api/elements", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(elementData),
+    });
+
+    if (saveResponse.ok) {
+      console.log("更新成功");
+    } else {
+      console.error("DB更新に失敗しました。");
+    }
+
+    await fetchUpdatedElements();
   };
 
   const csvToJson = (csvText: string, boardId: number) => {
@@ -199,6 +241,17 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     setUpdatedElements(newElements);
   };
 
+  const handleEditModalOpen = (element: IElementAndBoard) => {
+    setModalFormData({
+      elementId: element.elementId,
+      reference: element.reference,
+      content: element.content,
+      footprint: element.footprint,
+      productId: element.productId,
+    });
+    setEditModalOpen(true);
+  };
+
   const handleDeleteModalOpen = (elementId: number) => {
     setElementId(elementId);
     setDeleteModalOpen(true);
@@ -226,14 +279,13 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const elementList = updatedElements.map((element) => (
     <div
       key={element.elementId}
-      className="flex bg-base-100 rounded-box w-[1000px] md:w-full mt-2 p-3"
+      className="flex bg-base-100 rounded-box w-[1000px] mt-2 p-3"
     >
       <Button
         label="編集"
         className="btn btn-xs btn-accent w-16 mr-3"
         onClick={() => {
-          // setSelectedItem({ name: `R${index + 1}`, product: "Product 1" });
-          setEditModalOpen(true);
+          handleEditModalOpen(element);
         }}
       />
       <Button
@@ -241,10 +293,12 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
         className="btn btn-xs btn-secondary w-12 mr-5"
         onClick={() => handleDeleteModalOpen(element.elementId)}
       />
-      <h1 className="font-bold">{element.reference}</h1>
       {element.productName && (
-        <h1 className="font-bold ml-5">{element.productName}</h1>
+        <h1 className="font-bold text-warning">{element.productName}</h1>
       )}
+      <h1 className={`font-bold ${element.productName ? "ml-5" : ""}`}>
+        {element.reference}
+      </h1>
       <h1 className="font-bold ml-5">{element.content}</h1>
       <h1 className="font-bold ml-5">{element.footprint}</h1>
     </div>
@@ -334,7 +388,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
           defaultValue={formData.stencil.toString()}
           onChange={(value) => handleChange("stencil", value)}
         />
-        <h1 className="font-bold">素子CSV</h1>
+        <h1 className="font-bold mt-1">素子CSV</h1>
         <Input
           type="file"
           className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 w-full max-w-md"
@@ -381,26 +435,44 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
           <div className="modal-box max-w-5xl">
             <div className="flex flex-col bg-base-300 rounded-box p-3">
               <h2 className="font-bold text-lg">素子編集</h2>
-              <h2 className="font-bold text-lg">素子編集</h2>
-              <h2 className="font-bold text-lg">素子編集</h2>
-              <h2 className="font-bold text-lg">素子編集</h2>
-              <h2 className="font-bold text-lg">素子編集</h2>
-              <h2 className="font-bold text-lg">素子編集</h2>
-              <h2 className="font-bold text-lg">素子編集</h2>
-              <label className="block mt-3">名前</label>
-              {/* <Input
-              type="text"
-              value={selectedItem.name}
-              onChange={(e) => setSelectedItem({ ...selectedItem, name: e.target.value })}
-              className="input input-bordered w-full"
-            /> */}
-              <label className="block mt-3">製品</label>
-              {/* <Select
-              options={["Product 1", "Product 2", "Product 3"]}
-              value={selectedItem.product}
-              onChange={(value) => setSelectedItem({ ...selectedItem, product: value })}
-              className="select select-bordered w-full"
-            /> */}
+              <label className="block font-bold mt-3">参照</label>
+              <Input
+                type="text"
+                value={modalFormData.reference}
+                className="input input-bordered mt-1 w-full max-w-xs"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleModalChange("reference", e.target.value)
+                }
+              />
+              <label className="block font-bold mt-3">値</label>
+              <Input
+                type="text"
+                value={modalFormData.content}
+                className="input input-bordered mt-1 w-full max-w-xs"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleModalChange("content", e.target.value)
+                }
+              />
+              <label className="block font-bold mt-3">フットプリント</label>
+              <Input
+                type="text"
+                value={modalFormData.footprint}
+                className="input input-bordered mt-1 w-full max-w-xl"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleModalChange("footprint", e.target.value)
+                }
+              />
+              <label className="block font-bold mt-3">製品紐付</label>
+              <Select
+                options={productOptions}
+                defaultValue={
+                  modalFormData.productId ? modalFormData.productId : 0
+                }
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  handleModalChange("productId", e.target.value)
+                }
+                className="select select-bordered mt-1 w-full max-w-xs"
+              />
             </div>
             <div className="flex justify-center mt-3 modal-action">
               <Button
@@ -411,7 +483,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
               <Button
                 label="変更"
                 className="btn btn-primary ml-10 w-32"
-                onClick={() => setEditModalOpen(false)}
+                onClick={handleModalSubmit}
               />
             </div>
           </div>
