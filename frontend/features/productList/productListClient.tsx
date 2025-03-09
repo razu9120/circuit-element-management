@@ -27,7 +27,8 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
     dataSheetPath: "",
   });
   const [formKey, setFormKey] = useState(0);
-  // const [updatedProductList, setUpdatedProductList] = useState<IProductList[]>(productList);
+  const [updatedProductList, setUpdatedProductList] =
+    useState<IProduct[]>(productList);
 
   const handleChange = (field: string, value: string | File | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -62,7 +63,6 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
         // pdfファイルを削除するデータを作成
         const deleteData = {
           productId: product.productId,
-          // dataSheetPathFlg: !!formData.dataSheetPdf,
         };
 
         const deleteResponse = await fetch(deleteUrl, {
@@ -105,6 +105,7 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
       }
 
       await fetchUpdatedProduct(product.productId);
+      await fetchUpdatedProducts();
 
       setFormKey((prev) => prev + 1);
     } catch (error) {
@@ -127,7 +128,7 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
     }
   };
 
-  const products = productList.map((product) => (
+  const products = updatedProductList.map((product) => (
     <div
       key={product.productId}
       className="flex bg-base-100 rounded-box w-[1000px] md:w-full mb-2 p-3"
@@ -172,6 +173,14 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
       productName: productData.productName ?? "",
       dataSheetPdf: null,
     });
+  };
+
+  const fetchUpdatedProducts = async () => {
+    const getResponse = await fetch("http://localhost:3001/api/products");
+    console.log("getResponse: ", getResponse);
+
+    const newProducts = await getResponse.json();
+    setUpdatedProductList(newProducts);
   };
 
   const Redirect = (route: string) => {

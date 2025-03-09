@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 
 export const GET = async (
-  //   req: Request,
+  req: Request,
   props: { params: Promise<{ endpoint: string }> }
 ) => {
   const params = await props.params;
+  console.log("params: ", params);
   const { endpoint } = params;
+  console.log("endpoint: ", endpoint);
   const backendUrl = `http://localhost:3000/backend/v1/${endpoint}`;
 
   try {
