@@ -279,7 +279,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const elementList = updatedElements.map((element) => (
     <div
       key={element.elementId}
-      className="flex bg-base-100 rounded-box w-[1000px] mt-2 p-3"
+      className="flex bg-base-100 rounded-box w-[1000px] md:w-full mt-2 p-3"
     >
       <Button
         label="編集"
