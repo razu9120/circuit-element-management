@@ -7,6 +7,7 @@ import Input from "../../app/components/input";
 import RadioButton from "../../app/components/radioButton";
 import { stencilOptions, structureOptions } from "@/app/constants/options";
 import { useMenu } from "@/app/contexts/menuContext";
+import { useForm } from "react-hook-form";
 
 // 型定義
 interface IFormData {
@@ -42,14 +43,20 @@ interface IUploadResult {
   };
 }
 
+interface IFileData {
+  pcbDesign: File | null;
+  circuitDiagram: File | null;
+  csvFile: File | null;
+}
+
 const createFormData = (
   pcbDesign: File | null,
   circuitDiagram: File | null
 ): FormData => {
-  const uploadData = new FormData();
-  if (pcbDesign) uploadData.append("pcbDesign", pcbDesign);
-  if (circuitDiagram) uploadData.append("circuitDiagram", circuitDiagram);
-  return uploadData;
+  const formData = new FormData();
+  if (pcbDesign) formData.append("pcbDesign", pcbDesign);
+  if (circuitDiagram) formData.append("circuitDiagram", circuitDiagram);
+  return formData;
 };
 
 const createBoardData = (
@@ -78,15 +85,6 @@ const csvToJson = (csvText: string, boardId: number): IElementData[] => {
       footprint: values[2],
     };
   });
-};
-
-const initialFormData: IFormData = {
-  boardName: "",
-  structure: "1",
-  stencil: "false",
-  pcbDesign: null,
-  circuitDiagram: null,
-  csvFile: null,
 };
 
 // API関連の純粋関数
@@ -134,36 +132,62 @@ const saveElements = async (elements: IElementData[]) => {
 const RegistBoardClient = () => {
   const router = useRouter();
   const { setMenuId } = useMenu();
-  const [formData, setFormData] = useState<IFormData>(initialFormData);
   const [formKey, setFormKey] = useState(0);
+  const [fileData, setFileData] = useState<IFileData>({
+    pcbDesign: null,
+    circuitDiagram: null,
+    csvFile: null,
+  });
 
-  const handleChange = (field: string, value: string | File | null) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<IFormData>({
+    defaultValues: {
+      boardName: "",
+      structure: "1",
+      stencil: "false",
+    },
+  });
+
+  const handleFileChange = (field: keyof IFileData, files: FileList | null) => {
+    const file = files?.[0] || null;
+    setFileData((prev) => ({ ...prev, [field]: file }));
   };
 
-  const handleSubmit = async () => {
+  const onSubmit = async (data: IFormData) => {
     try {
       // ファイルアップロード
       const uploadData = createFormData(
-        formData.pcbDesign,
-        formData.circuitDiagram
+        fileData.pcbDesign,
+        fileData.circuitDiagram
       );
       const uploadResult = await uploadFiles(uploadData);
 
       // 基板データの保存
-      const boardData = createBoardData(formData, uploadResult);
+      const boardData = createBoardData({ ...data, ...fileData }, uploadResult);
       const responseData = await saveBoard(boardData);
       const boardId: number = responseData[0]?.board_id;
 
       // CSVファイルの処理
-      if (formData.csvFile) {
-        const csvText = await formData.csvFile.text();
+      if (fileData.csvFile) {
+        const csvText = await fileData.csvFile.text();
         const jsonElements = csvToJson(csvText, boardId);
         await saveElements(jsonElements);
       }
 
       // フォームのリセット
-      setFormData(initialFormData);
+      setValue("boardName", "");
+      setValue("structure", "1");
+      setValue("stencil", "false");
+      setFileData({
+        pcbDesign: null,
+        circuitDiagram: null,
+        csvFile: null,
+      });
       setFormKey((prev) => prev + 1);
     } catch (error) {
       console.error("エラーが発生しました:", error);
@@ -177,39 +201,54 @@ const RegistBoardClient = () => {
 
   return (
     <div key={formKey}>
-      <div className="flex flex-col bg-base-300 rounded-box p-3">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col bg-base-300 rounded-box p-3"
+      >
         <h1 className="font-bold">
           名前<span className="text-red-500">*</span>
         </h1>
         <Input
           type="text"
           placeholder="Type here"
-          value={formData.boardName}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleChange("boardName", e.target.value)
-          }
-          className="input input-bordered mt-1 mb-3 w-full max-w-xs"
+          className={`input input-bordered mt-1 mb-3 w-full max-w-xs ${
+            errors.boardName ? "input-error" : ""
+          }`}
+          {...register("boardName", { required: "名前は必須です" })}
         />
+        {errors.boardName && (
+          <p className="text-error text-sm mb-3">{errors.boardName.message}</p>
+        )}
 
         <h1 className="font-bold">
           構造<span className="text-red-500">*</span>
         </h1>
-        <RadioButton
-          name="boardType"
-          options={structureOptions}
-          defaultValue={formData.structure}
-          onChange={(value) => handleChange("structure", value)}
-        />
+        <div className={errors.structure ? "radio-error" : ""}>
+          <RadioButton
+            name="structure"
+            options={structureOptions}
+            defaultValue={watch("structure")}
+            onChange={(value) => setValue("structure", value)}
+          />
+        </div>
+        {errors.structure && (
+          <p className="text-error text-sm mb-3">{errors.structure.message}</p>
+        )}
 
         <h1 className="font-bold">
           ステンシル<span className="text-red-500">*</span>
         </h1>
-        <RadioButton
-          name="stencil"
-          options={stencilOptions}
-          defaultValue={formData.stencil}
-          onChange={(value) => handleChange("stencil", value)}
-        />
+        <div className={errors.stencil ? "radio-error" : ""}>
+          <RadioButton
+            name="stencil"
+            options={stencilOptions}
+            defaultValue={watch("stencil")}
+            onChange={(value) => setValue("stencil", value)}
+          />
+        </div>
+        {errors.stencil && (
+          <p className="text-error text-sm mb-3">{errors.stencil.message}</p>
+        )}
 
         <h1 className="font-bold">PCBデザイン</h1>
         <Input
@@ -217,7 +256,7 @@ const RegistBoardClient = () => {
           accept="image/jpeg, image/png, image/svg+xml, image/bmp"
           className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 mb-3 w-full max-w-md"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleChange("pcbDesign", e.target.files?.[0] || null)
+            handleFileChange("pcbDesign", e.target.files)
           }
         />
 
@@ -227,7 +266,7 @@ const RegistBoardClient = () => {
           accept="image/jpeg, image/png, image/svg+xml, image/bmp"
           className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 mb-3 w-full max-w-md"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleChange("circuitDiagram", e.target.files?.[0] || null)
+            handleFileChange("circuitDiagram", e.target.files)
           }
         />
 
@@ -237,23 +276,24 @@ const RegistBoardClient = () => {
           className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 w-full max-w-md"
           accept=".csv"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleChange("csvFile", e.target.files?.[0] || null)
+            handleFileChange("csvFile", e.target.files)
           }
         />
-      </div>
 
-      <div className="flex justify-center mt-3">
-        <Button
-          label="戻る"
-          className="btn btn-outline btn-secondary"
-          onClick={() => handleRedirect("/")}
-        />
-        <Button
-          label="登録"
-          className="btn btn-primary ml-10 w-32"
-          onClick={handleSubmit}
-        />
-      </div>
+        <div className="flex justify-center mt-3">
+          <Button
+            type="button"
+            label="戻る"
+            className="btn btn-outline btn-secondary"
+            onClick={() => handleRedirect("/")}
+          />
+          <Button
+            type="submit"
+            label="登録"
+            className="btn btn-primary ml-10 w-32"
+          />
+        </div>
+      </form>
     </div>
   );
 };
