@@ -8,17 +8,133 @@ import RadioButton from "../../app/components/radioButton";
 import { stencilOptions, structureOptions } from "@/app/constants/options";
 import { useMenu } from "@/app/contexts/menuContext";
 
+// 型定義
+interface IFormData {
+  boardName: string;
+  structure: string;
+  stencil: string;
+  pcbDesign: File | null;
+  circuitDiagram: File | null;
+  csvFile: File | null;
+}
+
+interface IBoardData {
+  boardName: string;
+  structure: string;
+  stencil: string;
+  boardImgPath: string;
+  diagramImgPath: string;
+}
+
+interface IElementData {
+  boardId: number;
+  reference: string;
+  content: string;
+  footprint: string;
+}
+
+interface IUploadResult {
+  pcbDesign?: {
+    path: string;
+  };
+  circuitDiagram?: {
+    path: string;
+  };
+}
+
+const createFormData = (
+  pcbDesign: File | null,
+  circuitDiagram: File | null
+): FormData => {
+  const uploadData = new FormData();
+  if (pcbDesign) uploadData.append("pcbDesign", pcbDesign);
+  if (circuitDiagram) uploadData.append("circuitDiagram", circuitDiagram);
+  return uploadData;
+};
+
+const createBoardData = (
+  formData: IFormData,
+  uploadResult: IUploadResult
+): IBoardData => ({
+  boardName: formData.boardName,
+  structure: formData.structure,
+  stencil: formData.stencil,
+  boardImgPath: uploadResult.pcbDesign ? uploadResult.pcbDesign.path : "",
+  diagramImgPath: uploadResult.circuitDiagram
+    ? uploadResult.circuitDiagram.path
+    : "",
+});
+
+const csvToJson = (csvText: string, boardId: number): IElementData[] => {
+  const lines = csvText.trim().split("\n");
+  const rows = lines.slice(1);
+
+  return rows.map((row) => {
+    const values = row.split(",").map((v) => v.replace(/"/g, "").trim());
+    return {
+      boardId,
+      reference: values[0],
+      content: values[1],
+      footprint: values[2],
+    };
+  });
+};
+
+const initialFormData: IFormData = {
+  boardName: "",
+  structure: "1",
+  stencil: "false",
+  pcbDesign: null,
+  circuitDiagram: null,
+  csvFile: null,
+};
+
+// API関連の純粋関数
+const uploadFiles = async (uploadData: FormData) => {
+  const response = await fetch("http://localhost:3001/api/upload", {
+    method: "POST",
+    body: uploadData,
+  });
+
+  if (!response.ok) {
+    throw new Error("ファイルのアップロードに失敗しました。");
+  }
+
+  return response.json();
+};
+
+const saveBoard = async (boardData: IBoardData) => {
+  const response = await fetch("http://localhost:3001/api/boards", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(boardData),
+  });
+
+  if (!response.ok) {
+    throw new Error("DB登録に失敗しました。");
+  }
+
+  return response.json();
+};
+
+const saveElements = async (elements: IElementData[]) => {
+  const response = await fetch("http://localhost:3001/api/elements/multiple", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(elements),
+  });
+
+  if (!response.ok) {
+    throw new Error("素子データ登録に失敗しました。");
+  }
+
+  return response.json();
+};
+
 const RegistBoardClient = () => {
   const router = useRouter();
   const { setMenuId } = useMenu();
-  const [formData, setFormData] = useState({
-    boardName: "",
-    structure: "1",
-    stencil: "false",
-    pcbDesign: null as File | null,
-    circuitDiagram: null as File | null,
-    csvFile: null as File | null,
-  });
+  const [formData, setFormData] = useState<IFormData>(initialFormData);
   const [formKey, setFormKey] = useState(0);
 
   const handleChange = (field: string, value: string | File | null) => {
@@ -26,108 +142,36 @@ const RegistBoardClient = () => {
   };
 
   const handleSubmit = async () => {
-    const uploadUrl = "http://localhost:3001/api/upload"; // 画像アップロード
-    const saveUrl = "http://localhost:3001/api/boards"; // 基板登録
-    const elementsUrl = "http://localhost:3001/api/elements/multiple"; // 素子登録
-
     try {
-      // PCBデザインと回路図のアップロード
-      const uploadData = new FormData();
-      if (formData.pcbDesign)
-        uploadData.append("pcbDesign", formData.pcbDesign);
-      if (formData.circuitDiagram)
-        uploadData.append("circuitDiagram", formData.circuitDiagram);
+      // ファイルアップロード
+      const uploadData = createFormData(
+        formData.pcbDesign,
+        formData.circuitDiagram
+      );
+      const uploadResult = await uploadFiles(uploadData);
 
-      const uploadResponse = await fetch(uploadUrl, {
-        method: "POST",
-        body: uploadData,
-      });
-
-      if (!uploadResponse.ok) {
-        console.error("ファイルのアップロードに失敗しました。");
-        return;
-      }
-
-      const uploadResult = await uploadResponse.json();
-      console.log("アップロード成功:", uploadResult);
-
-      // DBに登録するデータを作成
-      const boardData = {
-        boardName: formData.boardName,
-        structure: formData.structure,
-        stencil: formData.stencil,
-        boardImgPath: uploadResult.pcbDesign ? uploadResult.pcbDesign.path : "",
-        diagramImgPath: uploadResult.circuitDiagram
-          ? uploadResult.circuitDiagram.path
-          : "",
-      };
-
-      // DBにリクエスト
-      const saveResponse = await fetch(saveUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(boardData),
-      });
-
-      const responseData = await saveResponse.json();
+      // 基板データの保存
+      const boardData = createBoardData(formData, uploadResult);
+      const responseData = await saveBoard(boardData);
       const boardId: number = responseData[0]?.board_id;
-
-      if (saveResponse.ok) {
-        console.log("登録成功");
-      } else {
-        console.error("DB登録に失敗しました。");
-      }
 
       // CSVファイルの処理
       if (formData.csvFile) {
         const csvText = await formData.csvFile.text();
         const jsonElements = csvToJson(csvText, boardId);
-
-        // CSVデータの送信
-        const csvResponse = await fetch(elementsUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(jsonElements),
-        });
-
-        if (csvResponse.ok) {
-          console.log("素子データ登録成功");
-        } else {
-          console.error("素子データ登録に失敗しました。");
-        }
+        await saveElements(jsonElements);
       }
 
-      setFormData({
-        boardName: "",
-        structure: "1",
-        stencil: "false",
-        pcbDesign: null,
-        circuitDiagram: null,
-        csvFile: null,
-      });
-
+      // フォームのリセット
+      setFormData(initialFormData);
       setFormKey((prev) => prev + 1);
     } catch (error) {
-      console.error("通信エラー:", error);
+      console.error("エラーが発生しました:", error);
     }
   };
 
-  const csvToJson = (csvText: string, boardId: number) => {
-    const lines = csvText.trim().split("\n");
-    const rows = lines.slice(1);
-
-    return rows.map((row) => {
-      const values = row.split(",").map((v) => v.replace(/"/g, "").trim());
-      return {
-        boardId: boardId,
-        reference: values[0],
-        content: values[1],
-        footprint: values[2],
-      };
-    });
-  };
-
-  const Redirect = (route: string) => {
+  const handleRedirect = (route: string) => {
+    setMenuId("000");
     router.push(route);
   };
 
@@ -202,10 +246,7 @@ const RegistBoardClient = () => {
         <Button
           label="戻る"
           className="btn btn-outline btn-secondary"
-          onClick={() => {
-            setMenuId("000");
-            Redirect("/");
-          }}
+          onClick={() => handleRedirect("/")}
         />
         <Button
           label="登録"
