@@ -25,6 +25,237 @@ interface IProductOptions {
   label: string;
 }
 
+interface IFormData {
+  boardName: string;
+  structure: string;
+  stencil: string;
+  pcbDesign: File | null;
+  circuitDiagram: File | null;
+  csvFile: File | null;
+}
+
+interface IModalFormData {
+  elementId: number;
+  reference: string;
+  content: string;
+  footprint: string;
+  productId: number;
+}
+
+interface IUploadResult {
+  pcbDesign?: {
+    path: string;
+  };
+  circuitDiagram?: {
+    path: string;
+  };
+}
+
+interface IBoardData {
+  boardId: number;
+  boardName: string;
+  structure: string;
+  stencil: string;
+  boardImgPath: string;
+  diagramImgPath: string;
+}
+
+interface IDeleteData {
+  boardId: number;
+  boardImgPathFlg: boolean;
+  diagramImgPathFlg: boolean;
+}
+
+interface IElementData {
+  elementId: number;
+  boardId: number;
+  productId: number;
+  reference: string;
+  content: string;
+  footprint: string;
+}
+
+interface ICsvElementData {
+  boardId: number;
+  reference: string;
+  content: string;
+  footprint: string;
+}
+
+const createProductOptions = (productList: IProduct[]): IProductOptions[] => {
+  return productList.map((product) => ({
+    value: product.productId,
+    label: product.productName,
+  }));
+};
+
+const createFormData = (
+  pcbDesign: File | null,
+  circuitDiagram: File | null
+): FormData => {
+  const uploadData = new FormData();
+  if (pcbDesign) uploadData.append("pcbDesign", pcbDesign);
+  if (circuitDiagram) uploadData.append("circuitDiagram", circuitDiagram);
+  return uploadData;
+};
+
+const createBoardData = (
+  formData: IFormData,
+  uploadResult: IUploadResult,
+  updatedBoard: IBoard
+): IBoardData => ({
+  boardId: updatedBoard.boardId,
+  boardName: formData.boardName,
+  structure: formData.structure,
+  stencil: formData.stencil,
+  boardImgPath: uploadResult.pcbDesign
+    ? uploadResult.pcbDesign.path
+    : updatedBoard.boardImgPath,
+  diagramImgPath: uploadResult.circuitDiagram
+    ? uploadResult.circuitDiagram.path
+    : updatedBoard.diagramImgPath,
+});
+
+const createDeleteData = (
+  boardId: number,
+  pcbDesign: File | null,
+  circuitDiagram: File | null
+) => ({
+  boardId,
+  boardImgPathFlg: !!pcbDesign,
+  diagramImgPathFlg: !!circuitDiagram,
+});
+
+const csvToJson = (csvText: string, boardId: number): ICsvElementData[] => {
+  const lines = csvText.trim().split("\n");
+  const rows = lines.slice(1);
+
+  return rows.map((row) => {
+    const values = row.split(",").map((v) => v.replace(/"/g, "").trim());
+    return {
+      boardId,
+      reference: values[0],
+      content: values[1],
+      footprint: values[2],
+    };
+  });
+};
+
+const createElementList = (
+  elements: IElementAndBoard[],
+  onEdit: (element: IElementAndBoard) => void,
+  onDelete: (elementId: number) => void
+) => {
+  return elements.map((element) => (
+    <div
+      key={element.elementId}
+      className="flex bg-base-100 rounded-box w-[1000px] md:w-full mt-2 p-3"
+    >
+      <Button
+        label="編集"
+        className="btn btn-xs btn-accent w-16 mr-3"
+        onClick={() => onEdit(element)}
+      />
+      <Button
+        label="削除"
+        className="btn btn-xs btn-secondary w-12 mr-5"
+        onClick={() => onDelete(element.elementId)}
+      />
+      {element.productName && (
+        <h1 className="font-bold text-warning">{element.productName}</h1>
+      )}
+      <h1 className={`font-bold ${element.productName ? "ml-5" : ""}`}>
+        {element.reference}
+      </h1>
+      <h1 className="font-bold ml-5">{element.content}</h1>
+      <h1 className="font-bold ml-5">{element.footprint}</h1>
+    </div>
+  ));
+};
+
+const uploadFiles = async (uploadData: FormData): Promise<IUploadResult> => {
+  const response = await fetch("http://localhost:3001/api/upload", {
+    method: "POST",
+    body: uploadData,
+  });
+
+  if (!response.ok) {
+    throw new Error("ファイルのアップロードに失敗しました。");
+  }
+
+  return response.json();
+};
+
+const deleteFiles = async (deleteData: IDeleteData) => {
+  const response = await fetch("http://localhost:3001/api/images", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(deleteData),
+  });
+
+  if (!response.ok) {
+    throw new Error("ファイルの削除に失敗しました。");
+  }
+};
+
+const updateBoard = async (boardData: IBoardData) => {
+  const response = await fetch("http://localhost:3001/api/boards", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(boardData),
+  });
+
+  if (!response.ok) {
+    throw new Error("DB更新に失敗しました。");
+  }
+
+  return response.json();
+};
+
+const updateElement = async (elementData: IElementData) => {
+  const response = await fetch("http://localhost:3001/api/elements", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(elementData),
+  });
+
+  if (!response.ok) {
+    throw new Error("DB更新に失敗しました。");
+  }
+};
+
+const deleteElement = async (elementId: number) => {
+  const response = await fetch(
+    `http://localhost:3001/api/elements/${elementId}`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.messageCode || "エラーが発生しました");
+  }
+};
+
+const fetchBoard = async (boardId: number): Promise<IBoard> => {
+  const response = await fetch(`http://localhost:3001/api/boards/${boardId}`);
+  if (!response.ok) {
+    throw new Error("更新後のデータ取得に失敗しました。");
+  }
+  return response.json();
+};
+
+const fetchElements = async (boardId: number): Promise<IElementAndBoard[]> => {
+  const response = await fetch(
+    `http://localhost:3001/api/elements/board/${boardId}`
+  );
+  if (!response.ok) {
+    throw new Error("素子データの取得に失敗しました。");
+  }
+  return response.json();
+};
+
 const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   board,
   elements,
@@ -37,15 +268,15 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const [updatedBoard, setUpdatedBoard] = useState<IBoard>(board);
   const [updatedElements, setUpdatedElements] =
     useState<IElementAndBoard[]>(elements);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<IFormData>({
     boardName: updatedBoard.boardName,
     structure: updatedBoard.structure,
     stencil: updatedBoard.stencil.toString(),
-    pcbDesign: null as File | null,
-    circuitDiagram: null as File | null,
-    csvFile: null as File | null,
+    pcbDesign: null,
+    circuitDiagram: null,
+    csvFile: null,
   });
-  const [modalFormData, setModalFormData] = useState({
+  const [modalFormData, setModalFormData] = useState<IModalFormData>({
     elementId: 0,
     reference: "",
     content: "",
@@ -55,9 +286,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const [formKey, setFormKey] = useState(0);
   const [elementId, setElementId] = useState<number>(0);
 
-  const productOptions: IProductOptions[] = productList.map((product) => {
-    return { value: product.productId, label: product.productName };
-  });
+  const productOptions = createProductOptions(productList);
 
   const handleChange = (field: string, value: string | File | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -68,156 +297,41 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   };
 
   const handleSubmit = async () => {
-    const uploadUrl = "http://localhost:3001/api/upload"; // 画像アップロード
-    const deleteUrl = "http://localhost:3001/api/images"; // 画像削除
-    const saveUrl = "http://localhost:3001/api/boards"; // 基板更新
-    const elementsUrl = "http://localhost:3001/api/elements/multiple"; // 素子登録
-
     try {
-      // PCBデザインと回路図のアップロード
-      const uploadData = new FormData();
-      if (formData.pcbDesign)
-        uploadData.append("pcbDesign", formData.pcbDesign);
-      if (formData.circuitDiagram)
-        uploadData.append("circuitDiagram", formData.circuitDiagram);
+      // ファイルアップロード
+      const uploadData = createFormData(
+        formData.pcbDesign,
+        formData.circuitDiagram
+      );
+      const uploadResult = await uploadFiles(uploadData);
 
-      const uploadResponse = await fetch(uploadUrl, {
-        method: "POST",
-        body: uploadData,
-      });
-
-      if (!uploadResponse.ok) {
-        console.error("ファイルのアップロードに失敗しました。");
-        return;
-      }
-
-      const uploadResult = await uploadResponse.json();
-      console.log("アップロード成功:", uploadResult);
-
-      // 既存PCBデザインと回路図の削除
+      // 既存ファイルの削除
       if (formData.pcbDesign || formData.circuitDiagram) {
-        // 画像を削除するデータを作成
-        const deleteData = {
-          boardId: updatedBoard.boardId,
-          boardImgPathFlg: !!formData.pcbDesign,
-          diagramImgPathFlg: !!formData.circuitDiagram,
-        };
-
-        const deleteResponse = await fetch(deleteUrl, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(deleteData),
-        });
-
-        if (!deleteResponse.ok) {
-          console.error("ファイルの削除に失敗しました。");
-          return;
-        }
+        const deleteData = createDeleteData(
+          updatedBoard.boardId,
+          formData.pcbDesign,
+          formData.circuitDiagram
+        );
+        await deleteFiles(deleteData);
       }
 
-      // DBを更新するデータを作成
-      const boardData = {
-        boardId: updatedBoard.boardId,
-        boardName: formData.boardName,
-        structure: formData.structure,
-        stencil: formData.stencil,
-        boardImgPath: uploadResult.pcbDesign
-          ? uploadResult.pcbDesign.path
-          : updatedBoard.boardImgPath,
-        diagramImgPath: uploadResult.circuitDiagram
-          ? uploadResult.circuitDiagram.path
-          : updatedBoard.diagramImgPath,
-      };
-
-      // DBにリクエスト
-      const saveResponse = await fetch(saveUrl, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(boardData),
-      });
-
-      const responseData = await saveResponse.json();
-      const boardId: number = responseData[0]?.board_id;
-
-      if (saveResponse.ok) {
-        console.log("更新成功");
-      } else {
-        console.error("DB更新に失敗しました。");
-      }
+      // 基板データの更新
+      const boardData = createBoardData(formData, uploadResult, updatedBoard);
+      await updateBoard(boardData);
 
       // CSVファイルの処理
       if (formData.csvFile) {
         const csvText = await formData.csvFile.text();
-        const jsonElements = csvToJson(csvText, boardId);
-
-        // CSVデータの送信
-        const csvResponse = await fetch(elementsUrl, {
+        const jsonElements = csvToJson(csvText, board.boardId);
+        await fetch("http://localhost:3001/api/elements/multiple", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(jsonElements),
         });
-
-        if (csvResponse.ok) {
-          console.log("素子データ登録成功");
-        } else {
-          console.error("素子データ登録に失敗しました。");
-        }
       }
 
-      await fetchUpdatedBoard(board.boardId);
-      await fetchUpdatedElements();
-
-      setFormKey((prev) => prev + 1);
-    } catch (error) {
-      console.error("通信エラー:", error);
-    }
-  };
-
-  const handleModalSubmit = async () => {
-    const elementData = {
-      elementId: modalFormData.elementId,
-      boardId: board.boardId,
-      productId: modalFormData.productId,
-      reference: modalFormData.reference,
-      content: modalFormData.content,
-      footprint: modalFormData.footprint,
-    };
-
-    // DBにリクエスト
-    const saveResponse = await fetch("http://localhost:3001/api/elements", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(elementData),
-    });
-
-    if (saveResponse.ok) {
-      console.log("更新成功");
-    } else {
-      console.error("DB更新に失敗しました。");
-    }
-
-    await fetchUpdatedElements();
-  };
-
-  const csvToJson = (csvText: string, boardId: number) => {
-    const lines = csvText.trim().split("\n");
-    const rows = lines.slice(1);
-
-    return rows.map((row) => {
-      const values = row.split(",").map((v) => v.replace(/"/g, "").trim());
-      return {
-        boardId: boardId,
-        reference: values[0],
-        content: values[1],
-        footprint: values[2],
-      };
-    });
-  };
-
-  const fetchUpdatedBoard = async (boardId: number) => {
-    const response = await fetch(`http://localhost:3001/api/boards/${boardId}`);
-    if (response.ok) {
-      const updatedData = await response.json();
+      // データの更新
+      const updatedData = await fetchBoard(board.boardId);
       setFormData({
         boardName: updatedData.boardName,
         structure: updatedData.structure,
@@ -227,18 +341,39 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
         csvFile: null,
       });
       setUpdatedBoard(updatedData);
-    } else {
-      console.error("更新後のデータ取得に失敗しました。");
+      await fetchUpdatedElements();
+
+      setFormKey((prev) => prev + 1);
+    } catch (error) {
+      console.error("エラーが発生しました:", error);
+    }
+  };
+
+  const handleModalSubmit = async () => {
+    try {
+      const elementData = {
+        elementId: modalFormData.elementId,
+        boardId: board.boardId,
+        productId: modalFormData.productId,
+        reference: modalFormData.reference,
+        content: modalFormData.content,
+        footprint: modalFormData.footprint,
+      };
+
+      await updateElement(elementData);
+      await fetchUpdatedElements();
+    } catch (error) {
+      console.error("エラーが発生しました:", error);
     }
   };
 
   const fetchUpdatedElements = async () => {
-    const getResponse = await fetch(
-      `http://localhost:3001/api/elements/board/${board.boardId}`
-    );
-
-    const newElements = await getResponse.json();
-    setUpdatedElements(newElements);
+    try {
+      const newElements = await fetchElements(board.boardId);
+      setUpdatedElements(newElements);
+    } catch (error) {
+      console.error("エラーが発生しました:", error);
+    }
   };
 
   const handleEditModalOpen = (element: IElementAndBoard) => {
@@ -258,51 +393,25 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   };
 
   const handleDeleteElement = async () => {
-    const deleteResponse = await fetch(
-      `http://localhost:3001/api/elements/${elementId}`,
-      {
-        method: "DELETE",
-      }
-    );
-    if (!deleteResponse.ok) {
-      const errorData = await deleteResponse.json();
-      throw new Error(errorData.messageCode || "エラーが発生しました");
+    try {
+      await deleteElement(elementId);
+      await fetchUpdatedElements();
+      setDeleteModalOpen(false);
+    } catch (error) {
+      console.error("エラーが発生しました:", error);
     }
-    await fetchUpdatedElements();
-    setDeleteModalOpen(false);
   };
 
-  const Redirect = (route: string) => {
+  const handleRedirect = (route: string, menuId: string) => {
+    setMenuId(menuId);
     router.push(route);
   };
 
-  const elementList = updatedElements.map((element) => (
-    <div
-      key={element.elementId}
-      className="flex bg-base-100 rounded-box w-[1000px] md:w-full mt-2 p-3"
-    >
-      <Button
-        label="編集"
-        className="btn btn-xs btn-accent w-16 mr-3"
-        onClick={() => {
-          handleEditModalOpen(element);
-        }}
-      />
-      <Button
-        label="削除"
-        className="btn btn-xs btn-secondary w-12 mr-5"
-        onClick={() => handleDeleteModalOpen(element.elementId)}
-      />
-      {element.productName && (
-        <h1 className="font-bold text-warning">{element.productName}</h1>
-      )}
-      <h1 className={`font-bold ${element.productName ? "ml-5" : ""}`}>
-        {element.reference}
-      </h1>
-      <h1 className="font-bold ml-5">{element.content}</h1>
-      <h1 className="font-bold ml-5">{element.footprint}</h1>
-    </div>
-  ));
+  const elementList = createElementList(
+    updatedElements,
+    handleEditModalOpen,
+    handleDeleteModalOpen
+  );
 
   return (
     <div key={formKey}>
@@ -405,7 +514,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
           className="btn btn-outline btn-secondary"
           onClick={() => {
             setMenuId("003");
-            Redirect(`/boardList/${board.boardId}/boardDetail`);
+            handleRedirect(`/boardList/${board.boardId}/boardDetail`, "003");
           }}
         />
         <Button
