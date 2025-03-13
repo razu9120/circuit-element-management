@@ -550,7 +550,9 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
           <div className="modal-box max-w-5xl">
             <div className="flex flex-col bg-base-300 rounded-box p-3">
               <h2 className="font-bold text-lg">素子編集</h2>
-              <label className="block font-bold mt-3">参照</label>
+              <label className="block font-bold mt-3">
+                参照<span className="text-red-500">*</span>
+              </label>
               <Input
                 type="text"
                 value={modalFormData.reference}

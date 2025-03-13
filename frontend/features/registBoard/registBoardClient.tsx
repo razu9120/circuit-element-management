@@ -49,6 +49,64 @@ interface IFileData {
   csvFile: File | null;
 }
 
+// エラーハンドリングの共通関数
+const handleApiError = (
+  error: unknown,
+  router: ReturnType<typeof useRouter>
+) => {
+  console.error("エラーが発生しました:", error);
+  const errorMessage =
+    error instanceof Error ? error.message : "予期せぬエラーが発生しました";
+  router.push(`/error?message=${encodeURIComponent(errorMessage)}`);
+};
+
+// API関連の純粋関数
+const uploadFiles = async (uploadData: FormData) => {
+  const response = await fetch("http://localhost:3001/api/upload", {
+    method: "POST",
+    body: uploadData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      errorData.message || "ファイルのアップロードに失敗しました。"
+    );
+  }
+
+  return response.json();
+};
+
+const saveBoard = async (boardData: IBoardData) => {
+  const response = await fetch("http://localhost:3001/api/board", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(boardData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "基板データの保存に失敗しました。");
+  }
+
+  return response.json();
+};
+
+const saveElements = async (elements: IElementData[]) => {
+  const response = await fetch("http://localhost:3001/api/elements/multiple", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(elements),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "素子データの保存に失敗しました。");
+  }
+
+  return response.json();
+};
+
 const createFormData = (
   pcbDesign: File | null,
   circuitDiagram: File | null
@@ -73,60 +131,25 @@ const createBoardData = (
 });
 
 const csvToJson = (csvText: string, boardId: number): IElementData[] => {
-  const lines = csvText.trim().split("\n");
-  const rows = lines.slice(1);
+  try {
+    const lines = csvText.trim().split("\n");
+    const rows = lines.slice(1);
 
-  return rows.map((row) => {
-    const values = row.split(",").map((v) => v.replace(/"/g, "").trim());
-    return {
-      boardId,
-      reference: values[0],
-      content: values[1],
-      footprint: values[2],
-    };
-  });
-};
-
-// API関連の純粋関数
-const uploadFiles = async (uploadData: FormData) => {
-  const response = await fetch("http://localhost:3001/api/upload", {
-    method: "POST",
-    body: uploadData,
-  });
-
-  if (!response.ok) {
-    throw new Error("ファイルのアップロードに失敗しました。");
+    return rows.map((row) => {
+      const values = row.split(",").map((v) => v.replace(/"/g, "").trim());
+      if (values.length < 3) {
+        throw new Error("CSVファイルの形式が正しくありません。");
+      }
+      return {
+        boardId,
+        reference: values[0],
+        content: values[1],
+        footprint: values[2],
+      };
+    });
+  } catch {
+    throw new Error("CSVファイルの解析に失敗しました。");
   }
-
-  return response.json();
-};
-
-const saveBoard = async (boardData: IBoardData) => {
-  const response = await fetch("http://localhost:3001/api/boards", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(boardData),
-  });
-
-  if (!response.ok) {
-    throw new Error("DB登録に失敗しました。");
-  }
-
-  return response.json();
-};
-
-const saveElements = async (elements: IElementData[]) => {
-  const response = await fetch("http://localhost:3001/api/elements/multiple", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(elements),
-  });
-
-  if (!response.ok) {
-    throw new Error("素子データ登録に失敗しました。");
-  }
-
-  return response.json();
 };
 
 const RegistBoardClient = () => {
@@ -172,6 +195,10 @@ const RegistBoardClient = () => {
       const responseData = await saveBoard(boardData);
       const boardId: number = responseData[0]?.board_id;
 
+      if (!boardId) {
+        throw new Error("基板IDの取得に失敗しました。");
+      }
+
       // CSVファイルの処理
       if (fileData.csvFile) {
         const csvText = await fileData.csvFile.text();
@@ -190,7 +217,7 @@ const RegistBoardClient = () => {
       });
       setFormKey((prev) => prev + 1);
     } catch (error) {
-      console.error("エラーが発生しました:", error);
+      handleApiError(error, router);
     }
   };
 
