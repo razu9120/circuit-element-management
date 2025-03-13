@@ -292,7 +292,9 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
           <div className="modal-box max-w-5xl">
             <div className="flex flex-col bg-base-300 rounded-box p-3">
               <h2 className="font-bold text-lg">製品編集</h2>
-              <label className="block font-bold mt-3">名前</label>
+              <label className="block font-bold mt-3">
+                名前<span className="text-red-500">*</span>
+              </label>
               <Input
                 type="text"
                 placeholder="Type here"

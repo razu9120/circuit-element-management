@@ -473,7 +473,9 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
           </div>
         </div>
 
-        <h1 className="font-bold mt-3 mb-1">名前</h1>
+        <h1 className="font-bold mt-3 mb-1">
+          名前<span className="text-red-500">*</span>
+        </h1>
         <Input
           type="text"
           placeholder="Type here"
@@ -483,14 +485,18 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
           }
           className="input input-bordered mt-1 mb-3 w-full max-w-xs"
         />
-        <h1 className="font-bold">構造</h1>
+        <h1 className="font-bold">
+          構造<span className="text-red-500">*</span>
+        </h1>
         <RadioButton
           name="boardType"
           options={structureOptions}
           defaultValue={formData.structure}
           onChange={(value) => handleChange("structure", value)}
         />
-        <h1 className="font-bold mt-1">ステンシル</h1>
+        <h1 className="font-bold mt-1">
+          ステンシル<span className="text-red-500">*</span>
+        </h1>
         <RadioButton
           name="stencil"
           options={stencilOptions}
