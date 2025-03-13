@@ -7,9 +7,168 @@ import { useMenu } from "@/app/contexts/menuContext";
 import { IProduct } from "./productList";
 import Input from "@/app/components/input";
 
+// 型定義
 interface IProductListClientProps {
   productList: IProduct[];
 }
+
+interface IFormData {
+  productName: string;
+  dataSheetPdf: File | null;
+}
+
+interface IProductData {
+  productId: number;
+  productName: string;
+  dataSheetPath: string;
+}
+
+interface IUploadResult {
+  dataSheetPdf?: {
+    path: string;
+  };
+}
+
+interface IDeleteData {
+  productId: number;
+}
+
+// 純粋関数
+const createFormData = (dataSheetPdf: File | null): FormData => {
+  const uploadData = new FormData();
+  if (dataSheetPdf) {
+    uploadData.append("dataSheetPdf", dataSheetPdf);
+  }
+  return uploadData;
+};
+
+const createProductData = (
+  formData: IFormData,
+  uploadResult: IUploadResult,
+  product: IProduct
+): IProductData => ({
+  productId: product.productId,
+  productName: formData.productName,
+  dataSheetPath: uploadResult.dataSheetPdf
+    ? uploadResult.dataSheetPdf.path
+    : product.dataSheetPath,
+});
+
+const createDeleteData = (productId: number): IDeleteData => ({
+  productId,
+});
+
+const createInitialFormData = (): IFormData => ({
+  productName: "",
+  dataSheetPdf: null,
+});
+
+const createProductElement = (
+  product: IProduct,
+  onDataSheetClick: (path: string) => void,
+  onEditClick: () => void
+) => (
+  <div
+    key={product.productId}
+    className="flex bg-base-100 rounded-box w-[1000px] md:w-full mb-2 p-3"
+  >
+    {product.dataSheetPath ? (
+      <Button
+        label="データシート"
+        className="btn btn-xs btn-warning w-24 mr-3"
+        onClick={() => onDataSheetClick(product.dataSheetPath)}
+      />
+    ) : (
+      <Button
+        label="データシート"
+        className="btn btn-xs btn-warning w-24 mr-3"
+        disabled
+      />
+    )}
+    <Button
+      label="編集"
+      className="btn btn-xs btn-primary w-12 mr-5"
+      onClick={onEditClick}
+    />
+    <h1 className="font-bold">{product.productName}</h1>
+  </div>
+);
+
+const createProductList = (
+  products: IProduct[],
+  onDataSheetClick: (path: string) => void,
+  onEditClick: (productId: number) => void
+) => {
+  return products.map((product) =>
+    createProductElement(product, onDataSheetClick, () =>
+      onEditClick(product.productId)
+    )
+  );
+};
+
+// API関数
+const uploadFile = async (uploadData: FormData): Promise<IUploadResult> => {
+  const response = await fetch("http://localhost:3001/api/upload", {
+    method: "POST",
+    body: uploadData,
+  });
+
+  if (!response.ok) {
+    throw new Error("ファイルのアップロードに失敗しました。");
+  }
+
+  return response.json();
+};
+
+const deleteFile = async (deleteData: IDeleteData): Promise<void> => {
+  const response = await fetch("http://localhost:3001/api/images/pdf", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(deleteData),
+  });
+
+  if (!response.ok) {
+    throw new Error("ファイルの削除に失敗しました。");
+  }
+};
+
+const updateProduct = async (productData: IProductData): Promise<void> => {
+  const response = await fetch("http://localhost:3001/api/products", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(productData),
+  });
+
+  if (!response.ok) {
+    throw new Error("DB更新に失敗しました。");
+  }
+};
+
+const fetchProduct = async (productId: number): Promise<IProduct> => {
+  const response = await fetch(
+    `http://localhost:3001/api/products/${productId}`
+  );
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.messageCode || "エラーが発生しました");
+  }
+  return response.json();
+};
+
+const fetchProducts = async (): Promise<IProduct[]> => {
+  const response = await fetch("http://localhost:3001/api/products");
+  if (!response.ok) {
+    throw new Error("製品リストの取得に失敗しました。");
+  }
+  return response.json();
+};
+
+const getDataSheetUrl = (dataSheetPath: string): string => {
+  return `http://localhost:3001/api/images/dataSheetPdf/${dataSheetPath.replace(
+    "/uploads/dataSheetPdf/",
+    ""
+  )}`;
+};
 
 const ProductListClient: React.FC<IProductListClientProps> = ({
   productList,
@@ -17,181 +176,101 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
   const router = useRouter();
   const { setMenuId } = useMenu();
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
-  const [formData, setFormData] = useState({
-    productName: "",
-    dataSheetPdf: null as File | null,
-  });
+  const [formData, setFormData] = useState<IFormData>(createInitialFormData());
   const [product, setProduct] = useState<IProduct>({
     productId: 0,
     productName: "",
     dataSheetPath: "",
   });
-  const [formKey, setFormKey] = useState(0);
   const [updatedProductList, setUpdatedProductList] =
     useState<IProduct[]>(productList);
 
-  const handleChange = (field: string, value: string | File | null) => {
+  const handleChange = (
+    field: keyof IFormData,
+    value: string | File | null
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
-    const uploadUrl = "http://localhost:3001/api/upload"; // pdfアップロード
-    const deleteUrl = "http://localhost:3001/api/images/pdf"; // pdf削除
-    const saveUrl = "http://localhost:3001/api/products"; // 基板更新
-
     try {
-      // データシートのアップロード
-      const uploadData = new FormData();
-      if (formData.dataSheetPdf)
-        uploadData.append("dataSheetPdf", formData.dataSheetPdf);
-
-      const uploadResponse = await fetch(uploadUrl, {
-        method: "POST",
-        body: uploadData,
-      });
-
-      if (!uploadResponse.ok) {
-        console.error("ファイルのアップロードに失敗しました。");
-        return;
-      }
-
-      const uploadResult = await uploadResponse.json();
-      console.log("アップロード成功:", uploadResult);
+      // ファイルアップロード
+      const uploadData = createFormData(formData.dataSheetPdf);
+      const uploadResult = await uploadFile(uploadData);
 
       // 既存pdfファイルの削除
       if (formData.dataSheetPdf) {
-        // pdfファイルを削除するデータを作成
-        const deleteData = {
-          productId: product.productId,
-        };
-
-        const deleteResponse = await fetch(deleteUrl, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(deleteData),
-        });
-
-        if (!deleteResponse.ok) {
-          console.error("ファイルの削除に失敗しました。");
-          return;
-        }
+        const deleteData = createDeleteData(product.productId);
+        await deleteFile(deleteData);
       }
 
       // DBを更新するデータを作成
-      const productData = {
-        productId: product.productId,
-        productName: formData.productName,
-        dataSheetPath: uploadResult.dataSheetPdf
-          ? uploadResult.dataSheetPdf.path
-          : product.dataSheetPath,
-      };
+      const productData = createProductData(formData, uploadResult, product);
 
-      // DBにリクエスト
-      const saveResponse = await fetch(saveUrl, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(productData),
-      });
+      // DBに保存
+      await updateProduct(productData);
 
-      if (saveResponse.ok) {
-        console.log("更新成功");
-      } else {
-        console.error("DB更新に失敗しました。");
-      }
-
+      // データの更新
       await fetchUpdatedProduct(product.productId);
       await fetchUpdatedProducts();
-
-      setFormKey((prev) => prev + 1);
     } catch (error) {
-      console.error("通信エラー:", error);
+      console.error("エラーが発生しました:", error);
     }
   };
 
   const fetchUpdatedProduct = async (productId: number) => {
-    const response = await fetch(
-      `http://localhost:3001/api/products/${productId}`
-    );
-    if (response.ok) {
-      const updatedData = await response.json();
+    try {
+      const updatedData = await fetchProduct(productId);
       setFormData({
         productName: updatedData.productName,
         dataSheetPdf: null,
       });
-    } else {
-      console.error("更新後のデータ取得に失敗しました。");
+    } catch (error) {
+      console.error("更新後のデータ取得に失敗しました:", error);
     }
   };
 
-  const displayDataSheetPdf = async (dataSheetPath: string) => {
+  const handleDataSheetClick = (dataSheetPath: string) => {
     window.open(
-      `http://localhost:3001/api/images/dataSheetPdf/${dataSheetPath.replace(
-        "/uploads/dataSheetPdf/",
-        ""
-      )}`,
+      getDataSheetUrl(dataSheetPath),
       "_blank",
       "noopener,noreferrer"
     );
   };
 
-  const products = updatedProductList.map((product) => (
-    <div
-      key={product.productId}
-      className="flex bg-base-100 rounded-box w-[1000px] md:w-full mb-2 p-3"
-    >
-      {product.dataSheetPath ? (
-        <Button
-          label="データシート"
-          className="btn btn-xs btn-warning w-24 mr-3"
-          onClick={() => {
-            displayDataSheetPdf(product.dataSheetPath);
-          }}
-        />
-      ) : (
-        <Button
-          label="データシート"
-          className="btn btn-xs btn-warning w-24 mr-3"
-          disabled
-        />
-      )}
-      <Button
-        label="編集"
-        className="btn btn-xs btn-primary w-12 mr-5"
-        onClick={() => {
-          fetchProduct(product.productId);
-          setEditModalOpen(true);
-        }}
-      />
-      <h1 className="font-bold">{product.productName}</h1>
-    </div>
-  ));
-
-  const fetchProduct = async (productId: number) => {
-    const response = await fetch(
-      `http://localhost:3001/api/products/${productId}`
-    );
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.messageCode || "エラーが発生しました");
+  const handleEditClick = async (productId: number) => {
+    try {
+      const productData = await fetchProduct(productId);
+      setProduct(productData);
+      setFormData({
+        productName: productData.productName ?? "",
+        dataSheetPdf: null,
+      });
+      setEditModalOpen(true);
+    } catch (error) {
+      console.error("エラーが発生しました:", error);
     }
-    const productData = await response.json();
-    setProduct(productData);
-    setFormData({
-      productName: productData.productName ?? "",
-      dataSheetPdf: null,
-    });
   };
 
   const fetchUpdatedProducts = async () => {
-    const getResponse = await fetch("http://localhost:3001/api/products");
-
-    const newProducts = await getResponse.json();
-    setUpdatedProductList(newProducts);
+    try {
+      const newProducts = await fetchProducts();
+      setUpdatedProductList(newProducts);
+    } catch (error) {
+      console.error("製品リストの更新に失敗しました:", error);
+    }
   };
 
-  const Redirect = (route: string) => {
+  const handleRedirect = (route: string, menuId: string) => {
+    setMenuId(menuId);
     router.push(route);
   };
+
+  const products = createProductList(
+    updatedProductList,
+    handleDataSheetClick,
+    handleEditClick
+  );
 
   return (
     <>
@@ -204,15 +283,12 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
         <Button
           label="戻る"
           className="btn btn-outline btn-secondary"
-          onClick={() => {
-            setMenuId("000");
-            Redirect("/");
-          }}
+          onClick={() => handleRedirect("/", "000")}
         />
       </div>
 
       {editModalOpen && (
-        <div key={formKey} className="modal modal-open">
+        <div className="modal modal-open">
           <div className="modal-box max-w-5xl">
             <div className="flex flex-col bg-base-300 rounded-box p-3">
               <h2 className="font-bold text-lg">製品編集</h2>
@@ -242,10 +318,7 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
                 className="btn btn-outline btn-secondary"
                 onClick={() => {
                   setEditModalOpen(false);
-                  setFormData({
-                    productName: "",
-                    dataSheetPdf: null,
-                  });
+                  setFormData(createInitialFormData());
                 }}
               />
               <Button
