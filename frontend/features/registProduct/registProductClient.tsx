@@ -6,83 +6,116 @@ import Input from "../../app/components/input";
 import { useMenu } from "@/app/contexts/menuContext";
 import { useState } from "react";
 
+// 型定義
+interface IFormData {
+  productName: string;
+  dataSheetPdf: File | null;
+}
+
+interface IProductData {
+  productName: string;
+  dataSheetPath: string;
+}
+
+interface IUploadResult {
+  dataSheetPdf?: {
+    path: string;
+  };
+}
+
+// 純粋関数
+const createFormData = (dataSheetPdf: File | null): FormData => {
+  const uploadData = new FormData();
+  if (dataSheetPdf) {
+    uploadData.append("dataSheetPdf", dataSheetPdf);
+  }
+  return uploadData;
+};
+
+const createProductData = (
+  formData: IFormData,
+  uploadResult: IUploadResult
+): IProductData => ({
+  productName: formData.productName,
+  dataSheetPath: uploadResult.dataSheetPdf
+    ? uploadResult.dataSheetPdf.path
+    : "",
+});
+
+const uploadFile = async (uploadData: FormData): Promise<IUploadResult> => {
+  const response = await fetch("http://localhost:3001/api/upload", {
+    method: "POST",
+    body: uploadData,
+  });
+
+  if (!response.ok) {
+    throw new Error("ファイルのアップロードに失敗しました。");
+  }
+
+  return response.json();
+};
+
+const saveProduct = async (productData: IProductData): Promise<void> => {
+  const response = await fetch("http://localhost:3001/api/products", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(productData),
+  });
+
+  if (!response.ok) {
+    throw new Error("DB登録に失敗しました。");
+  }
+};
+
+const createInitialFormData = (): IFormData => ({
+  productName: "",
+  dataSheetPdf: null,
+});
+
 const RegistProductClient = () => {
   const router = useRouter();
   const { setMenuId } = useMenu();
-  const [formData, setFormData] = useState({
-    productName: "",
-    dataSheetPdf: null as File | null,
-  });
+  const [formData, setFormData] = useState<IFormData>(createInitialFormData());
   const [formKey, setFormKey] = useState(0);
 
-  const handleChange = (field: string, value: string | File | null) => {
+  const handleChange = (
+    field: keyof IFormData,
+    value: string | File | null
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
-    const uploadUrl = "http://localhost:3001/api/upload"; // pdfアップロード
-    const saveUrl = "http://localhost:3001/api/products"; // 製品登録
-
     try {
-      // PCBデザインと回路図のアップロード
-      const uploadData = new FormData();
-      if (formData.dataSheetPdf) {
-        uploadData.append("dataSheetPdf", formData.dataSheetPdf);
-      }
-
-      const uploadResponse = await fetch(uploadUrl, {
-        method: "POST",
-        body: uploadData,
-      });
-
-      if (!uploadResponse.ok) {
-        console.error("ファイルのアップロードに失敗しました。");
-        return;
-      }
-
-      const uploadResult = await uploadResponse.json();
-      console.log("アップロード成功:", uploadResult);
+      // ファイルアップロード
+      const uploadData = createFormData(formData.dataSheetPdf);
+      const uploadResult = await uploadFile(uploadData);
 
       // DBに登録するデータを作成
-      const boardData = {
-        productName: formData.productName,
-        dataSheetPath: uploadResult.dataSheetPdf
-          ? uploadResult.dataSheetPdf.path
-          : "",
-      };
+      const productData = createProductData(formData, uploadResult);
 
-      // DBにリクエスト
-      const saveResponse = await fetch(saveUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(boardData),
-      });
+      // DBに保存
+      await saveProduct(productData);
 
-      if (saveResponse.ok) {
-        console.log("登録成功");
-      } else {
-        console.error("DB登録に失敗しました。");
-      }
-
-      setFormData({
-        productName: "",
-        dataSheetPdf: null,
-      });
-
+      // フォームをリセット
+      setFormData(createInitialFormData());
       setFormKey((prev) => prev + 1);
     } catch (error) {
-      console.error("通信エラー:", error);
+      console.error("エラーが発生しました:", error);
     }
   };
 
-  const Redirect = (route: string) => {
+  const handleRedirect = (route: string, menuId: string) => {
+    setMenuId(menuId);
     router.push(route);
   };
 
   return (
     <div key={formKey}>
       <div className="flex flex-col bg-base-300 rounded-box p-3">
-        <h1 className="font-bold">名前</h1>
+        <h1 className="font-bold">
+          名前<span className="text-red-500">*</span>
+        </h1>
         <Input
           type="text"
           placeholder="Type here"
@@ -108,10 +141,7 @@ const RegistProductClient = () => {
         <Button
           label="戻る"
           className="btn btn-outline btn-secondary"
-          onClick={() => {
-            setMenuId("000");
-            Redirect("/");
-          }}
+          onClick={() => handleRedirect("/", "000")}
         />
         <Button
           label="登録"
