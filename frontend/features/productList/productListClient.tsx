@@ -6,6 +6,7 @@ import Button from "@/app/components/button";
 import { useMenu } from "@/app/contexts/menuContext";
 import { IProduct } from "./productList";
 import Input from "@/app/components/input";
+import { useForm } from "react-hook-form";
 
 // 型定義
 interface IProductListClientProps {
@@ -14,7 +15,6 @@ interface IProductListClientProps {
 
 interface IFormData {
   productName: string;
-  dataSheetPdf: File | null;
 }
 
 interface IProductData {
@@ -34,33 +34,8 @@ interface IDeleteData {
 }
 
 // 純粋関数
-const createFormData = (dataSheetPdf: File | null): FormData => {
-  const uploadData = new FormData();
-  if (dataSheetPdf) {
-    uploadData.append("dataSheetPdf", dataSheetPdf);
-  }
-  return uploadData;
-};
-
-const createProductData = (
-  formData: IFormData,
-  uploadResult: IUploadResult,
-  product: IProduct
-): IProductData => ({
-  productId: product.productId,
-  productName: formData.productName,
-  dataSheetPath: uploadResult.dataSheetPdf
-    ? uploadResult.dataSheetPdf.path
-    : product.dataSheetPath,
-});
-
 const createDeleteData = (productId: number): IDeleteData => ({
   productId,
-});
-
-const createInitialFormData = (): IFormData => ({
-  productName: "",
-  dataSheetPdf: null,
 });
 
 const createProductElement = (
@@ -176,7 +151,7 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
   const router = useRouter();
   const { setMenuId } = useMenu();
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
-  const [formData, setFormData] = useState<IFormData>(createInitialFormData());
+  const [dataSheetPdf, setDataSheetPdf] = useState<File | null>(null);
   const [product, setProduct] = useState<IProduct>({
     productId: 0,
     productName: "",
@@ -185,34 +160,59 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
   const [updatedProductList, setUpdatedProductList] =
     useState<IProduct[]>(productList);
 
-  const handleChange = (
-    field: keyof IFormData,
-    value: string | File | null
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    reset,
+  } = useForm<IFormData>({
+    mode: "onChange",
+  });
+
+  const handleFileChange = (files: FileList | null) => {
+    const file = files?.[0] || null;
+    setDataSheetPdf(file);
   };
 
-  const handleSubmit = async () => {
+  const onSubmit = async (data: IFormData) => {
     try {
       // ファイルアップロード
-      const uploadData = createFormData(formData.dataSheetPdf);
-      const uploadResult = await uploadFile(uploadData);
+      if (dataSheetPdf) {
+        const uploadData = new FormData();
+        uploadData.append("dataSheetPdf", dataSheetPdf);
+        const uploadResult = await uploadFile(uploadData);
 
-      // 既存pdfファイルの削除
-      if (formData.dataSheetPdf) {
+        // 既存pdfファイルの削除
         const deleteData = createDeleteData(product.productId);
         await deleteFile(deleteData);
+
+        // DBを更新するデータを作成
+        const productData: IProductData = {
+          productId: product.productId,
+          productName: data.productName,
+          dataSheetPath: uploadResult.dataSheetPdf
+            ? uploadResult.dataSheetPdf.path
+            : product.dataSheetPath,
+        };
+
+        // DBに保存
+        await updateProduct(productData);
+      } else {
+        // ファイルなしで更新
+        const productData: IProductData = {
+          productId: product.productId,
+          productName: data.productName,
+          dataSheetPath: product.dataSheetPath,
+        };
+
+        await updateProduct(productData);
       }
-
-      // DBを更新するデータを作成
-      const productData = createProductData(formData, uploadResult, product);
-
-      // DBに保存
-      await updateProduct(productData);
 
       // データの更新
       await fetchUpdatedProduct(product.productId);
       await fetchUpdatedProducts();
+      // reset();
     } catch (error) {
       console.error("エラーが発生しました:", error);
     }
@@ -221,10 +221,8 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
   const fetchUpdatedProduct = async (productId: number) => {
     try {
       const updatedData = await fetchProduct(productId);
-      setFormData({
-        productName: updatedData.productName,
-        dataSheetPdf: null,
-      });
+      setValue("productName", updatedData.productName);
+      setDataSheetPdf(null);
     } catch (error) {
       console.error("更新後のデータ取得に失敗しました:", error);
     }
@@ -242,10 +240,8 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
     try {
       const productData = await fetchProduct(productId);
       setProduct(productData);
-      setFormData({
-        productName: productData.productName ?? "",
-        dataSheetPdf: null,
-      });
+      setValue("productName", productData.productName);
+      setDataSheetPdf(null);
       setEditModalOpen(true);
     } catch (error) {
       console.error("エラーが発生しました:", error);
@@ -290,7 +286,10 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
       {editModalOpen && (
         <div className="modal modal-open">
           <div className="modal-box max-w-5xl">
-            <div className="flex flex-col bg-base-300 rounded-box p-3">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="flex flex-col bg-base-300 rounded-box p-3"
+            >
               <h2 className="font-bold text-lg">製品編集</h2>
               <label className="block font-bold mt-3">
                 名前<span className="text-red-500">*</span>
@@ -298,37 +297,45 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
               <Input
                 type="text"
                 placeholder="Type here"
-                value={formData.productName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange("productName", e.target.value)
-                }
-                className="input input-bordered mt-1 mb-3 w-full max-w-xs"
+                className={`input input-bordered mt-1 mb-3 w-full max-w-xs ${
+                  errors.productName ? "input-error" : ""
+                }`}
+                {...register("productName", { required: "名前は必須です" })}
               />
+              {errors.productName && (
+                <p className="text-error text-sm mb-3">
+                  {errors.productName.message}
+                </p>
+              )}
+
               <label className="block font-bold mt-3">データシート</label>
               <Input
                 type="file"
                 accept="application/pdf"
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange("dataSheetPdf", e.target.files?.[0] || null)
+                  handleFileChange(e.target.files)
                 }
                 className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 mb-3 w-full max-w-md"
               />
-            </div>
-            <div className="flex justify-center mt-3 modal-action">
-              <Button
-                label="戻る"
-                className="btn btn-outline btn-secondary"
-                onClick={() => {
-                  setEditModalOpen(false);
-                  setFormData(createInitialFormData());
-                }}
-              />
-              <Button
-                label="変更"
-                className="btn btn-primary ml-10 w-32"
-                onClick={handleSubmit}
-              />
-            </div>
+
+              <div className="flex justify-center mt-3 modal-action">
+                <Button
+                  type="button"
+                  label="戻る"
+                  className="btn btn-outline btn-secondary"
+                  onClick={() => {
+                    setEditModalOpen(false);
+                    reset();
+                    setDataSheetPdf(null);
+                  }}
+                />
+                <Button
+                  type="submit"
+                  label="変更"
+                  className="btn btn-primary ml-10 w-32"
+                />
+              </div>
+            </form>
           </div>
         </div>
       )}
