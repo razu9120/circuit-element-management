@@ -5,11 +5,11 @@ import Button from "../../app/components/button";
 import Input from "../../app/components/input";
 import { useMenu } from "@/app/contexts/menuContext";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 
 // 型定義
 interface IFormData {
   productName: string;
-  dataSheetPdf: File | null;
 }
 
 interface IProductData {
@@ -22,25 +22,6 @@ interface IUploadResult {
     path: string;
   };
 }
-
-// 純粋関数
-const createFormData = (dataSheetPdf: File | null): FormData => {
-  const uploadData = new FormData();
-  if (dataSheetPdf) {
-    uploadData.append("dataSheetPdf", dataSheetPdf);
-  }
-  return uploadData;
-};
-
-const createProductData = (
-  formData: IFormData,
-  uploadResult: IUploadResult
-): IProductData => ({
-  productName: formData.productName,
-  dataSheetPath: uploadResult.dataSheetPdf
-    ? uploadResult.dataSheetPdf.path
-    : "",
-});
 
 const uploadFile = async (uploadData: FormData): Promise<IUploadResult> => {
   const response = await fetch("http://localhost:3001/api/upload", {
@@ -67,38 +48,58 @@ const saveProduct = async (productData: IProductData): Promise<void> => {
   }
 };
 
-const createInitialFormData = (): IFormData => ({
-  productName: "",
-  dataSheetPdf: null,
-});
-
-const RegistProductClient = () => {
+const RegistProductClient: React.FC = () => {
   const router = useRouter();
   const { setMenuId } = useMenu();
-  const [formData, setFormData] = useState<IFormData>(createInitialFormData());
   const [formKey, setFormKey] = useState(0);
+  const [dataSheetPdf, setDataSheetPdf] = useState<File | null>(null);
 
-  const handleChange = (
-    field: keyof IFormData,
-    value: string | File | null
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm<IFormData>({
+    mode: "onChange",
+    defaultValues: {
+      productName: "",
+    },
+  });
+
+  const handleFileChange = (files: FileList | null) => {
+    const file = files?.[0] || null;
+    setDataSheetPdf(file);
   };
 
-  const handleSubmit = async () => {
+  const onSubmit = async (data: IFormData) => {
     try {
-      // ファイルアップロード
-      const uploadData = createFormData(formData.dataSheetPdf);
-      const uploadResult = await uploadFile(uploadData);
+      if (dataSheetPdf) {
+        // ファイルアップロード
+        const uploadData = new FormData();
+        uploadData.append("dataSheetPdf", dataSheetPdf);
+        const uploadResult = await uploadFile(uploadData);
 
-      // DBに登録するデータを作成
-      const productData = createProductData(formData, uploadResult);
+        // DBに登録するデータを作成
+        const productData: IProductData = {
+          productName: data.productName,
+          dataSheetPath: uploadResult.dataSheetPdf?.path || "",
+        };
 
-      // DBに保存
-      await saveProduct(productData);
+        // DBに保存
+        await saveProduct(productData);
+      } else {
+        // ファイルなしで製品データを登録
+        const productData: IProductData = {
+          productName: data.productName,
+          dataSheetPath: "",
+        };
 
-      // フォームをリセット
-      setFormData(createInitialFormData());
+        await saveProduct(productData);
+      }
+
+      setValue("productName", "");
+      setDataSheetPdf(null);
+
       setFormKey((prev) => prev + 1);
     } catch (error) {
       console.error("エラーが発生しました:", error);
@@ -112,43 +113,51 @@ const RegistProductClient = () => {
 
   return (
     <div key={formKey}>
-      <div className="flex flex-col bg-base-300 rounded-box p-3">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col bg-base-300 rounded-box p-3"
+      >
         <h1 className="font-bold">
           名前<span className="text-red-500">*</span>
         </h1>
         <Input
           type="text"
           placeholder="Type here"
-          value={formData.productName}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleChange("productName", e.target.value)
-          }
-          className="input input-bordered mt-1 mb-3 w-full max-w-xs"
+          className={`input input-bordered mt-1 mb-3 w-full max-w-xs ${
+            errors.productName ? "input-error" : ""
+          }`}
+          {...register("productName", { required: "名前は必須です" })}
         />
+        {errors.productName && (
+          <p className="text-error text-sm mb-3">
+            {errors.productName.message}
+          </p>
+        )}
 
         <h1 className="font-bold">データシート</h1>
         <Input
           type="file"
           accept="application/pdf"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleChange("dataSheetPdf", e.target.files?.[0] || null)
+            handleFileChange(e.target.files)
           }
           className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 mb-3 w-full max-w-md"
         />
-      </div>
 
-      <div className="flex justify-center mt-3">
-        <Button
-          label="戻る"
-          className="btn btn-outline btn-secondary"
-          onClick={() => handleRedirect("/", "000")}
-        />
-        <Button
-          label="登録"
-          className="btn btn-primary ml-10 w-32"
-          onClick={handleSubmit}
-        />
-      </div>
+        <div className="flex justify-center mt-3">
+          <Button
+            type="button"
+            label="戻る"
+            className="btn btn-outline btn-secondary"
+            onClick={() => handleRedirect("/", "000")}
+          />
+          <Button
+            type="submit"
+            label="登録"
+            className="btn btn-primary ml-10 w-32"
+          />
+        </div>
+      </form>
     </div>
   );
 };
