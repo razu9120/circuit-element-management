@@ -12,6 +12,7 @@ import { stencilOptions, structureOptions } from "@/app/constants/options";
 import { IBoard, IElementAndBoard } from "../boardDetail/boardDetail";
 import Select from "@/app/components/select";
 import { IProduct } from "../productList/productList";
+import { useForm } from "react-hook-form";
 // import { Select } from "@/app/components/select";
 
 interface IEditBoardClientProps {
@@ -29,6 +30,9 @@ interface IFormData {
   boardName: string;
   structure: string;
   stencil: string;
+}
+
+interface IFileData {
   pcbDesign: File | null;
   circuitDiagram: File | null;
   csvFile: File | null;
@@ -268,10 +272,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const [updatedBoard, setUpdatedBoard] = useState<IBoard>(board);
   const [updatedElements, setUpdatedElements] =
     useState<IElementAndBoard[]>(elements);
-  const [formData, setFormData] = useState<IFormData>({
-    boardName: updatedBoard.boardName,
-    structure: updatedBoard.structure,
-    stencil: updatedBoard.stencil.toString(),
+  const [fileData, setFileData] = useState<IFileData>({
     pcbDesign: null,
     circuitDiagram: null,
     csvFile: null,
@@ -288,40 +289,55 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
 
   const productOptions = createProductOptions(productList);
 
-  const handleChange = (field: string, value: string | File | null) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<IFormData>({
+    defaultValues: {
+      boardName: updatedBoard.boardName,
+      structure: updatedBoard.structure,
+      stencil: updatedBoard.stencil.toString(),
+    },
+  });
+
+  const handleFileChange = (field: keyof IFileData, files: FileList | null) => {
+    const file = files?.[0] || null;
+    setFileData((prev) => ({ ...prev, [field]: file }));
   };
 
   const handleModalChange = (field: string, value: string | File | null) => {
     setModalFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async () => {
+  const onSubmit = async (data: IFormData) => {
     try {
       // ファイルアップロード
       const uploadData = createFormData(
-        formData.pcbDesign,
-        formData.circuitDiagram
+        fileData.pcbDesign,
+        fileData.circuitDiagram
       );
       const uploadResult = await uploadFiles(uploadData);
 
       // 既存ファイルの削除
-      if (formData.pcbDesign || formData.circuitDiagram) {
+      if (fileData.pcbDesign || fileData.circuitDiagram) {
         const deleteData = createDeleteData(
           updatedBoard.boardId,
-          formData.pcbDesign,
-          formData.circuitDiagram
+          fileData.pcbDesign,
+          fileData.circuitDiagram
         );
         await deleteFiles(deleteData);
       }
 
       // 基板データの更新
-      const boardData = createBoardData(formData, uploadResult, updatedBoard);
+      const boardData = createBoardData(data, uploadResult, updatedBoard);
       await updateBoard(boardData);
 
       // CSVファイルの処理
-      if (formData.csvFile) {
-        const csvText = await formData.csvFile.text();
+      if (fileData.csvFile) {
+        const csvText = await fileData.csvFile.text();
         const jsonElements = csvToJson(csvText, board.boardId);
         await fetch("http://localhost:3001/api/elements/multiple", {
           method: "POST",
@@ -332,10 +348,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
 
       // データの更新
       const updatedData = await fetchBoard(board.boardId);
-      setFormData({
-        boardName: updatedData.boardName,
-        structure: updatedData.structure,
-        stencil: updatedData.stencil.toString(),
+      setFileData({
         pcbDesign: null,
         circuitDiagram: null,
         csvFile: null,
@@ -415,7 +428,10 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
 
   return (
     <div key={formKey}>
-      <div className="flex flex-col bg-base-300 rounded-box p-3">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col bg-base-300 rounded-box p-3"
+      >
         <div className="flex flex-col md:flex-row gap-3 items-stretch">
           <div className="flex flex-col">
             <h1 className="font-bold mb-1">PCBデザイン</h1>
@@ -439,7 +455,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
                 accept="image/jpeg, image/png, image/svg+xml, image/bmp"
                 className="file-input file-input-xs md:file-input-lg file-input-bordered mt-2 w-full max-w-md"
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange("pcbDesign", e.target.files?.[0] || null)
+                  handleFileChange("pcbDesign", e.target.files)
                 }
               />
             </div>
@@ -466,7 +482,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
                 accept="image/jpeg, image/png, image/svg+xml, image/bmp"
                 className="file-input file-input-xs md:file-input-lg file-input-bordered mt-2 w-full max-w-md"
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange("circuitDiagram", e.target.files?.[0] || null)
+                  handleFileChange("circuitDiagram", e.target.files)
                 }
               />
             </div>
@@ -479,56 +495,70 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
         <Input
           type="text"
           placeholder="Type here"
-          value={formData.boardName}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleChange("boardName", e.target.value)
-          }
-          className="input input-bordered mt-1 mb-3 w-full max-w-xs"
+          className={`input input-bordered mt-1 mb-3 w-full max-w-xs ${
+            errors.boardName ? "input-error" : ""
+          }`}
+          {...register("boardName", { required: "名前は必須です" })}
         />
+        {errors.boardName && (
+          <p className="text-error text-sm mb-3">{errors.boardName.message}</p>
+        )}
+
         <h1 className="font-bold">
           構造<span className="text-red-500">*</span>
         </h1>
-        <RadioButton
-          name="boardType"
-          options={structureOptions}
-          defaultValue={formData.structure}
-          onChange={(value) => handleChange("structure", value)}
-        />
+        <div className={errors.structure ? "radio-error" : ""}>
+          <RadioButton
+            name="structure"
+            options={structureOptions}
+            defaultValue={watch("structure")}
+            onChange={(value) => setValue("structure", value)}
+          />
+        </div>
+        {errors.structure && (
+          <p className="text-error text-sm mb-3">{errors.structure.message}</p>
+        )}
+
         <h1 className="font-bold mt-1">
           ステンシル<span className="text-red-500">*</span>
         </h1>
-        <RadioButton
-          name="stencil"
-          options={stencilOptions}
-          defaultValue={formData.stencil.toString()}
-          onChange={(value) => handleChange("stencil", value)}
-        />
+        <div className={errors.stencil ? "radio-error" : ""}>
+          <RadioButton
+            name="stencil"
+            options={stencilOptions}
+            defaultValue={watch("stencil")}
+            onChange={(value) => setValue("stencil", value)}
+          />
+        </div>
+        {errors.stencil && (
+          <p className="text-error text-sm mb-3">{errors.stencil.message}</p>
+        )}
+
         <h1 className="font-bold mt-1">素子CSV</h1>
         <Input
           type="file"
           className="file-input file-input-xs md:file-input-lg file-input-bordered mt-1 w-full max-w-md"
           accept=".csv"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleChange("csvFile", e.target.files?.[0] || null)
+            handleFileChange("csvFile", e.target.files)
           }
         />
-      </div>
-
-      <div className="flex justify-center mt-3">
-        <Button
-          label="戻る"
-          className="btn btn-outline btn-secondary"
-          onClick={() => {
-            setMenuId("003");
-            handleRedirect(`/boardList/${board.boardId}/boardDetail`, "003");
-          }}
-        />
-        <Button
-          label="変更"
-          className="btn btn-primary ml-10 w-32"
-          onClick={handleSubmit}
-        />
-      </div>
+        <div className="flex justify-center mt-3">
+          <Button
+            label="戻る"
+            className="btn btn-outline btn-secondary"
+            onClick={() => {
+              setMenuId("003");
+              handleRedirect(`/boardList/${board.boardId}/boardDetail`, "003");
+            }}
+          />
+          <Button
+            type="submit"
+            label="変更"
+            className="btn btn-primary ml-10 w-32"
+          />
+        </div>
+      </form>
 
       <div className="bg-base-300 rounded-box mt-9 p-3">
         <h1 className="font-bold bg-base-300 mb-2 sticky top-0 z-5">素子</h1>
