@@ -277,13 +277,6 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     circuitDiagram: null,
     csvFile: null,
   });
-  const [modalFormData, setModalFormData] = useState<IModalFormData>({
-    elementId: 0,
-    reference: "",
-    content: "",
-    footprint: "",
-    productId: 0,
-  });
   const [formKey, setFormKey] = useState(0);
   const [elementId, setElementId] = useState<number>(0);
 
@@ -296,6 +289,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     setValue,
     watch,
   } = useForm<IFormData>({
+    mode: "onChange",
     defaultValues: {
       boardName: updatedBoard.boardName,
       structure: updatedBoard.structure,
@@ -303,13 +297,25 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     },
   });
 
+  const {
+    register: registerModal,
+    handleSubmit: handleSubmitModal,
+    formState: { errors: modalErrors },
+    reset: resetModal,
+  } = useForm<IModalFormData>({
+    mode: "onChange",
+    defaultValues: {
+      elementId: 0,
+      reference: "",
+      content: "",
+      footprint: "",
+      productId: 0,
+    },
+  });
+
   const handleFileChange = (field: keyof IFileData, files: FileList | null) => {
     const file = files?.[0] || null;
-    setFileData((prev) => ({ ...prev, [field]: file }));
-  };
-
-  const handleModalChange = (field: string, value: string | File | null) => {
-    setModalFormData((prev) => ({ ...prev, [field]: value }));
+    setFileData((prev: IFileData) => ({ ...prev, [field]: file }));
   };
 
   const onSubmit = async (data: IFormData) => {
@@ -362,19 +368,31 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     }
   };
 
-  const handleModalSubmit = async () => {
+  const handleEditModalOpen = (element: IElementAndBoard) => {
+    resetModal({
+      elementId: element.elementId,
+      reference: element.reference,
+      content: element.content,
+      footprint: element.footprint,
+      productId: element.productId,
+    });
+    setEditModalOpen(true);
+  };
+
+  const onModalSubmit = async (data: IModalFormData) => {
     try {
       const elementData = {
-        elementId: modalFormData.elementId,
+        elementId: data.elementId,
         boardId: board.boardId,
-        productId: modalFormData.productId,
-        reference: modalFormData.reference,
-        content: modalFormData.content,
-        footprint: modalFormData.footprint,
+        productId: data.productId,
+        reference: data.reference,
+        content: data.content,
+        footprint: data.footprint,
       };
 
       await updateElement(elementData);
       await fetchUpdatedElements();
+      setEditModalOpen(false);
     } catch (error) {
       console.error("エラーが発生しました:", error);
     }
@@ -387,17 +405,6 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     } catch (error) {
       console.error("エラーが発生しました:", error);
     }
-  };
-
-  const handleEditModalOpen = (element: IElementAndBoard) => {
-    setModalFormData({
-      elementId: element.elementId,
-      reference: element.reference,
-      content: element.content,
-      footprint: element.footprint,
-      productId: element.productId,
-    });
-    setEditModalOpen(true);
   };
 
   const handleDeleteModalOpen = (elementId: number) => {
@@ -578,61 +585,62 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       {editModalOpen && (
         <div className="modal modal-open">
           <div className="modal-box max-w-5xl">
-            <div className="flex flex-col bg-base-300 rounded-box p-3">
+            <form
+              onSubmit={handleSubmitModal(onModalSubmit)}
+              className="flex flex-col bg-base-300 rounded-box p-3"
+            >
               <h2 className="font-bold text-lg">素子編集</h2>
               <label className="block font-bold mt-3">
                 参照<span className="text-red-500">*</span>
               </label>
               <Input
                 type="text"
-                value={modalFormData.reference}
-                className="input input-bordered mt-1 w-full max-w-xs"
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleModalChange("reference", e.target.value)
-                }
+                className={`input input-bordered mt-1 mb-3 w-full max-w-xs ${
+                  modalErrors.reference ? "input-error" : ""
+                }`}
+                {...registerModal("reference", { required: "参照は必須です" })}
               />
-              <label className="block font-bold mt-3">値</label>
+              {modalErrors.reference && (
+                <p className="text-error text-sm mb-3">
+                  {modalErrors.reference.message}
+                </p>
+              )}
+
+              <label className="block font-bold">値</label>
               <Input
                 type="text"
-                value={modalFormData.content}
-                className="input input-bordered mt-1 w-full max-w-xs"
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleModalChange("content", e.target.value)
-                }
+                className="input input-bordered mt-1 mb-3 w-full max-w-xs"
+                {...registerModal("content")}
               />
-              <label className="block font-bold mt-3">フットプリント</label>
+
+              <label className="block font-bold">フットプリント</label>
               <Input
                 type="text"
-                value={modalFormData.footprint}
-                className="input input-bordered mt-1 w-full max-w-xl"
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleModalChange("footprint", e.target.value)
-                }
+                className="input input-bordered mt-1 mb-3 w-full max-w-xl"
+                {...registerModal("footprint")}
               />
-              <label className="block font-bold mt-3">製品紐付</label>
+
+              <label className="block font-bold">製品紐付</label>
               <Select
                 options={productOptions}
-                defaultValue={
-                  modalFormData.productId ? modalFormData.productId : 0
-                }
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                  handleModalChange("productId", e.target.value)
-                }
                 className="select select-bordered mt-1 w-full max-w-xs"
+                {...registerModal("productId")}
               />
-            </div>
-            <div className="flex justify-center mt-3 modal-action">
-              <Button
-                label="戻る"
-                className="btn btn-outline btn-secondary"
-                onClick={() => setEditModalOpen(false)}
-              />
-              <Button
-                label="変更"
-                className="btn btn-primary ml-10 w-32"
-                onClick={handleModalSubmit}
-              />
-            </div>
+
+              <div className="flex justify-center mt-3 modal-action">
+                <Button
+                  type="button"
+                  label="戻る"
+                  className="btn btn-outline btn-secondary"
+                  onClick={() => setEditModalOpen(false)}
+                />
+                <Button
+                  type="submit"
+                  label="変更"
+                  className="btn btn-primary ml-10 w-32"
+                />
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -169,6 +169,7 @@ const RegistBoardClient = () => {
     setValue,
     watch,
   } = useForm<IFormData>({
+    mode: "onChange",
     defaultValues: {
       boardName: "",
       structure: "1",
