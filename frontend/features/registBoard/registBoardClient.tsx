@@ -60,7 +60,7 @@ const handleApiError = (
   router.push(`/error?message=${encodeURIComponent(errorMessage)}`);
 };
 
-// API関連の純粋関数
+// ファイルアップロード
 const uploadFiles = async (uploadData: FormData) => {
   const response = await fetch("http://localhost:3001/api/upload", {
     method: "POST",

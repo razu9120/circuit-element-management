@@ -19,7 +19,7 @@ interface IImageProps {
   style: React.CSSProperties;
 }
 
-// 純粋関数
+// 画像パスを取得
 const getImagePath = (boardImgPath: string): string => {
   if (boardImgPath === "") return "/no_image3.png";
   return `/api/images/pcbDesign/${boardImgPath.replace(

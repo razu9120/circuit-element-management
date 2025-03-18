@@ -33,7 +33,7 @@ interface IDeleteData {
   productId: number;
 }
 
-// 純粋関数
+// 削除データを作成
 const createDeleteData = (productId: number): IDeleteData => ({
   productId,
 });
