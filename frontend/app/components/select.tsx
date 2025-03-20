@@ -8,7 +8,7 @@ interface Option {
 interface SelectProps {
   label?: string;
   options: Option[];
-  value?: number;
+  value: number;
   defaultValue?: number;
   onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   className?: string;
@@ -18,7 +18,6 @@ const Select: React.FC<SelectProps> = ({
   label,
   options,
   value,
-  defaultValue,
   onChange,
   className = "",
 }) => {
@@ -34,7 +33,6 @@ const Select: React.FC<SelectProps> = ({
       <select
         className={`select select-bordered ${className}`}
         value={value}
-        defaultValue={defaultValue}
         onChange={onChange}
       >
         {newOptions.map((option) => (

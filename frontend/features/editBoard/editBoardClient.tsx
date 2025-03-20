@@ -279,11 +279,13 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   });
   const [formKey, setFormKey] = useState(0);
   const [elementId, setElementId] = useState<number>(0);
+  const [selectedProductId, setSelectedProductId] = useState<number>(0);
 
   const productOptions = createProductOptions(productList);
 
-  const [showModalAlert, setShowModalAlert] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [showModalAlert, setShowModalAlert] = useState(false);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const {
     register,
     handleSubmit,
@@ -379,6 +381,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       footprint: element.footprint,
       productId: element.productId,
     });
+    setSelectedProductId(element.productId || 0);
     setEditModalOpen(true);
   };
 
@@ -387,7 +390,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       const elementData = {
         elementId: data.elementId,
         boardId: board.boardId,
-        productId: data.productId,
+        productId: selectedProductId,
         reference: data.reference,
         content: data.content,
         footprint: data.footprint,
@@ -419,6 +422,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     try {
       await deleteElement(elementId);
       await fetchUpdatedElements();
+      setShowDeleteAlert(true);
       setDeleteModalOpen(false);
     } catch (error) {
       console.error("エラーが発生しました:", error);
@@ -576,6 +580,12 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
         isVisible={showAlert}
         onClose={() => setShowAlert(false)}
       />
+      <Alert
+        message="素子情報の削除に成功しました"
+        type="success"
+        isVisible={showDeleteAlert}
+        onClose={() => setShowDeleteAlert(false)}
+      />
 
       <div className="bg-base-300 rounded-box mt-9 p-3">
         <h1 className="font-bold bg-base-300 mb-2 sticky top-0 z-5">素子</h1>
@@ -634,7 +644,8 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
               <Select
                 options={productOptions}
                 className="select select-bordered mt-1 w-full max-w-xs"
-                {...registerModal("productId")}
+                value={selectedProductId}
+                onChange={(e) => setSelectedProductId(Number(e.target.value))}
               />
 
               <div className="flex justify-center mt-3 modal-action">

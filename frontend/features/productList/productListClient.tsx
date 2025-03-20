@@ -7,6 +7,7 @@ import { useMenu } from "@/app/contexts/menuContext";
 import { IProduct } from "./productList";
 import Input from "@/app/components/input";
 import { useForm } from "react-hook-form";
+import Alert from "@/app/components/alert";
 
 // 型定義
 interface IProductListClientProps {
@@ -159,6 +160,7 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
   });
   const [updatedProductList, setUpdatedProductList] =
     useState<IProduct[]>(productList);
+  const [showAlert, setShowAlert] = useState(false);
 
   const {
     register,
@@ -212,6 +214,7 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
       // データの更新
       await fetchUpdatedProduct(product.productId);
       await fetchUpdatedProducts();
+      setShowAlert(true);
       // reset();
     } catch (error) {
       console.error("エラーが発生しました:", error);
@@ -273,6 +276,12 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
       {/* <div className="flex flex-col bg-base-300 rounded-box p-3">ソートとか</div> */}
       <div className="bg-base-300 rounded-box mt-3 p-3">
         <div className="h-[550px] overflow-y-auto">{products}</div>
+        <Alert
+          message="製品情報を更新しました"
+          type="success"
+          isVisible={showAlert}
+          onClose={() => setShowAlert(false)}
+        />
       </div>
 
       <div className="flex justify-center mt-3">
@@ -284,7 +293,7 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
       </div>
 
       {editModalOpen && (
-        <div className="modal modal-open">
+        <div className="modal modal-open z-40">
           <div className="modal-box max-w-5xl">
             <form
               onSubmit={handleSubmit(onSubmit)}

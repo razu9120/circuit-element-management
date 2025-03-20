@@ -6,6 +6,7 @@ import Input from "../../app/components/input";
 import { useMenu } from "@/app/contexts/menuContext";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import Alert from "@/app/components/alert";
 
 // 型定義
 interface IFormData {
@@ -53,7 +54,7 @@ const RegistProductClient: React.FC = () => {
   const { setMenuId } = useMenu();
   const [formKey, setFormKey] = useState(0);
   const [dataSheetPdf, setDataSheetPdf] = useState<File | null>(null);
-
+  const [showAlert, setShowAlert] = useState(false);
   const {
     register,
     handleSubmit,
@@ -101,6 +102,7 @@ const RegistProductClient: React.FC = () => {
       setDataSheetPdf(null);
 
       setFormKey((prev) => prev + 1);
+      setShowAlert(true);
     } catch (error) {
       console.error("エラーが発生しました:", error);
     }
@@ -158,6 +160,13 @@ const RegistProductClient: React.FC = () => {
           />
         </div>
       </form>
+
+      <Alert
+        message="製品情報の登録に成功しました"
+        type="success"
+        isVisible={showAlert}
+        onClose={() => setShowAlert(false)}
+      />
     </div>
   );
 };

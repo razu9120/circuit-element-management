@@ -221,7 +221,6 @@ const RegistBoardClient = () => {
       });
       setFormKey((prev) => prev + 1);
 
-      // 登録成功後にアラートを表示
       setShowAlert(true);
     } catch (error) {
       handleApiError(error, router);
