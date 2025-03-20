@@ -624,7 +624,10 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       <div className="bg-base-300 rounded-box mt-9 p-3">
         <div className="flex">
           <h1 className="font-bold bg-base-300 mb-2 sticky top-0 z-5">素子</h1>
-          <Button label="追加" className="btn btn-xs btn-accent w-16 ml-6" />
+          <Button
+            label="個別追加"
+            className="btn btn-xs btn-accent w-24 ml-6"
+          />
           {elementList.length > 0 && (
             <Button
               label="一括削除"
