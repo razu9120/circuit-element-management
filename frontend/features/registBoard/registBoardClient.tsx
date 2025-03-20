@@ -8,6 +8,7 @@ import RadioButton from "../../app/components/radioButton";
 import { stencilOptions, structureOptions } from "@/app/constants/options";
 import { useMenu } from "@/app/contexts/menuContext";
 import { useForm } from "react-hook-form";
+import Alert from "@/app/components/alert";
 
 // 型定義
 interface IFormData {
@@ -78,7 +79,7 @@ const uploadFiles = async (uploadData: FormData) => {
 };
 
 const saveBoard = async (boardData: IBoardData) => {
-  const response = await fetch("http://localhost:3001/api/board", {
+  const response = await fetch("http://localhost:3001/api/boards", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(boardData),
@@ -161,6 +162,7 @@ const RegistBoardClient = () => {
     circuitDiagram: null,
     csvFile: null,
   });
+  const [showAlert, setShowAlert] = useState(false);
 
   const {
     register,
@@ -194,6 +196,7 @@ const RegistBoardClient = () => {
       // 基板データの保存
       const boardData = createBoardData({ ...data, ...fileData }, uploadResult);
       const responseData = await saveBoard(boardData);
+      console.log("responseData: ", responseData);
       const boardId: number = responseData[0]?.board_id;
 
       if (!boardId) {
@@ -217,6 +220,9 @@ const RegistBoardClient = () => {
         csvFile: null,
       });
       setFormKey((prev) => prev + 1);
+
+      // 登録成功後にアラートを表示
+      setShowAlert(true);
     } catch (error) {
       handleApiError(error, router);
     }
@@ -322,6 +328,13 @@ const RegistBoardClient = () => {
           />
         </div>
       </form>
+
+      <Alert
+        message="登録に成功しました"
+        type="success"
+        isVisible={showAlert}
+        onClose={() => setShowAlert(false)}
+      />
     </div>
   );
 };
