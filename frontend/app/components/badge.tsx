@@ -5,14 +5,11 @@ interface IBadgeProps {
 
 const Badge: React.FC<IBadgeProps> = ({
   label,
-  color = "primary",
+  color = "badge-primary",
   ...props
 }) => {
   return (
-    <div
-      className={`badge badge-${color} badge-sm text-xs text-white pr-2 pl-2`}
-      {...props}
-    >
+    <div className={`badge ${color} badge-sm text-xs pr-2 pl-2`} {...props}>
       {label}
     </div>
   );

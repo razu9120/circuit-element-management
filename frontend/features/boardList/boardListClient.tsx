@@ -47,14 +47,18 @@ const createBadgeList = (board: IBoardList) => {
     badges.push(<Badge key="multi" label="多層基板" />);
   if (!board.stencil)
     badges.push(
-      <Badge key="no-stencil" label="ステンシルなし" color="secondary" />
+      <Badge key="no-stencil" label="ステンシルなし" color="badge-secondary" />
     );
   if (board.stencil)
     badges.push(
-      <Badge key="with-stencil" label="ステンシルあり" color="secondary" />
+      <Badge
+        key="with-stencil"
+        label="ステンシルあり"
+        color="badge-secondary"
+      />
     );
   if (board.hasElements)
-    badges.push(<Badge key="elements" label="素子" color="accent" />);
+    badges.push(<Badge key="elements" label="素子" color="badge-accent" />);
 
   return badges;
 };
