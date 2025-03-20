@@ -611,14 +611,16 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
             >
               <h2 className="font-bold text-lg">素子編集</h2>
               <label className="block font-bold mt-3">
-                参照<span className="text-red-500">*</span>
+                参照/名前<span className="text-red-500">*</span>
               </label>
               <Input
                 type="text"
                 className={`input input-bordered mt-1 mb-3 w-full max-w-xs ${
                   modalErrors.reference ? "input-error" : ""
                 }`}
-                {...registerModal("reference", { required: "参照は必須です" })}
+                {...registerModal("reference", {
+                  required: "参照/名前は必須です",
+                })}
               />
               {modalErrors.reference && (
                 <p className="text-error text-sm mb-3">
