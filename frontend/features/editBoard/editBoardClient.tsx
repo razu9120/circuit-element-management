@@ -395,7 +395,6 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
 
       await updateElement(elementData);
       await fetchUpdatedElements();
-      setEditModalOpen(false);
       setShowModalAlert(true);
     } catch (error) {
       console.error("エラーが発生しました:", error);
@@ -643,7 +642,10 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
                   type="button"
                   label="戻る"
                   className="btn btn-outline btn-secondary"
-                  onClick={() => setEditModalOpen(false)}
+                  onClick={() => {
+                    setEditModalOpen(false);
+                    setShowModalAlert(false);
+                  }}
                 />
                 <Button
                   type="submit"
