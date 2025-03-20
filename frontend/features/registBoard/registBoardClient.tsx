@@ -330,7 +330,7 @@ const RegistBoardClient = () => {
       </form>
 
       <Alert
-        message="登録に成功しました"
+        message="基板情報の登録に成功しました"
         type="success"
         isVisible={showAlert}
         onClose={() => setShowAlert(false)}

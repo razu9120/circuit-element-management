@@ -13,7 +13,7 @@ import { IBoard, IElementAndBoard } from "../boardDetail/boardDetail";
 import Select from "@/app/components/select";
 import { IProduct } from "../productList/productList";
 import { useForm } from "react-hook-form";
-// import { Select } from "@/app/components/select";
+import Alert from "@/app/components/alert";
 
 interface IEditBoardClientProps {
   board: IBoard;
@@ -282,6 +282,8 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
 
   const productOptions = createProductOptions(productList);
 
+  const [showModalAlert, setShowModalAlert] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
   const {
     register,
     handleSubmit,
@@ -363,6 +365,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       await fetchUpdatedElements();
 
       setFormKey((prev) => prev + 1);
+      setShowAlert(true);
     } catch (error) {
       console.error("エラーが発生しました:", error);
     }
@@ -393,6 +396,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       await updateElement(elementData);
       await fetchUpdatedElements();
       setEditModalOpen(false);
+      setShowModalAlert(true);
     } catch (error) {
       console.error("エラーが発生しました:", error);
     }
@@ -567,6 +571,13 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
         </div>
       </form>
 
+      <Alert
+        message="基板情報の更新に成功しました"
+        type="success"
+        isVisible={showAlert}
+        onClose={() => setShowAlert(false)}
+      />
+
       <div className="bg-base-300 rounded-box mt-9 p-3">
         <h1 className="font-bold bg-base-300 mb-2 sticky top-0 z-5">素子</h1>
         <div className="h-64 md:h-72 lg:h-[465px] overflow-y-auto">
@@ -642,6 +653,12 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
               </div>
             </form>
           </div>
+          <Alert
+            message="素子情報の更新に成功しました"
+            type="success"
+            isVisible={showModalAlert}
+            onClose={() => setShowModalAlert(false)}
+          />
         </div>
       )}
     </div>
