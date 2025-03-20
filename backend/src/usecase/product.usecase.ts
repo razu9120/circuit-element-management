@@ -39,16 +39,7 @@ export class ProductUseCase {
       );
 
       return camelCaseResult as IProduct[];
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -70,16 +61,7 @@ export class ProductUseCase {
       };
 
       return camelCaseResult;
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -104,16 +86,7 @@ export class ProductUseCase {
 
       const result = await this.productEntity.createProduct(newProduct);
       return result;
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -140,16 +113,7 @@ export class ProductUseCase {
 
       const result = await this.productEntity.updateProduct(updProduct);
       return result;
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -164,16 +128,7 @@ export class ProductUseCase {
     try {
       const result = await this.productEntity.deleteProduct(productId);
       return result;
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

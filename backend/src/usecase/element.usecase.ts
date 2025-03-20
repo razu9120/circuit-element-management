@@ -36,16 +36,7 @@ export class ElementUseCase {
     try {
       const result = await this.elementEntity.getElementById(elementId);
       return result;
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -67,16 +58,7 @@ export class ElementUseCase {
       );
 
       return camelCaseResult as IElementAndBoard[];
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -104,16 +86,7 @@ export class ElementUseCase {
 
       const result = await this.elementEntity.createElement(newElement);
       return result;
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -150,16 +123,7 @@ export class ElementUseCase {
 
       const results = await Promise.all(createPromises);
       return results;
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -196,16 +160,7 @@ export class ElementUseCase {
         const result = await this.elementEntity.updateElement(updElement);
         return result;
       }
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -220,16 +175,7 @@ export class ElementUseCase {
     try {
       const result = await this.elementEntity.deleteElement(elementId);
       return result;
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

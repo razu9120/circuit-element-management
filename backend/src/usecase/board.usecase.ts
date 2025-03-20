@@ -40,16 +40,7 @@ export class BoardUseCase {
       );
 
       return camelCaseResult as IBoardHasElements[];
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -74,16 +65,7 @@ export class BoardUseCase {
       };
 
       return camelCaseResult;
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -112,16 +94,7 @@ export class BoardUseCase {
 
       const result = await this.boardEntity.createBoard(newBoard);
       return result;
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -164,16 +137,7 @@ export class BoardUseCase {
 
       const result = await this.boardEntity.updateBoard(updBoard);
       return result;
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -188,16 +152,7 @@ export class BoardUseCase {
     try {
       const result = await this.boardEntity.deleteBoard(boardId);
       return result;
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+    } catch (e) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
