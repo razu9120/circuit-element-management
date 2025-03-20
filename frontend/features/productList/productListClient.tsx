@@ -333,6 +333,7 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
                   label="戻る"
                   className="btn btn-outline btn-secondary"
                   onClick={() => {
+                    setShowAlert(false);
                     setEditModalOpen(false);
                     reset();
                     setDataSheetPdf(null);

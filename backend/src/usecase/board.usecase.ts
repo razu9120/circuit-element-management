@@ -5,7 +5,6 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { camelCase } from 'lodash';
 import {
   IBoard,
   IBoardCreate,
@@ -30,16 +29,7 @@ export class BoardUseCase {
 
   async userGetBoards(): Promise<IBoardHasElements[]> {
     try {
-      const result = await this.boardEntity.getAllBoards();
-
-      // スネークケースをキャメルケースに変換
-      const camelCaseResult = result.map((board) =>
-        Object.fromEntries(
-          Object.entries(board).map(([key, value]) => [camelCase(key), value]),
-        ),
-      );
-
-      return camelCaseResult as IBoardHasElements[];
+      return await this.boardEntity.getAllBoards();
     } catch (e) {
       throw new HttpException(
         {
@@ -53,18 +43,7 @@ export class BoardUseCase {
 
   async userGetBoardById(boardId: number): Promise<IBoard> {
     try {
-      const result = await this.boardEntity.getBoardById(boardId);
-
-      const camelCaseResult: IBoard = {
-        boardId: result[0].board_id,
-        boardName: result[0].board_name,
-        structure: result[0].structure,
-        stencil: result[0].stencil,
-        diagramImgPath: result[0].diagram_img_path,
-        boardImgPath: result[0].board_img_path,
-      };
-
-      return camelCaseResult;
+      return await this.boardEntity.getBoardById(boardId);
     } catch (e) {
       throw new HttpException(
         {

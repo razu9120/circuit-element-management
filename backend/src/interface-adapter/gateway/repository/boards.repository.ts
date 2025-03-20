@@ -14,17 +14,8 @@ export class BoardRepository implements IBoardRepository {
     private readonly driver: ISqlDriver,
   ) {}
 
-  async findById(id: number): Promise<IBoard> {
-    return await this.driver.select(`
-      SELECT board_id, board_name, structure, stencil, diagram_img_path, board_img_path
-      FROM boards
-      WHERE board_id = ${id}
-      ORDER BY board_id
-      `);
-  }
-
   async findAll(): Promise<IBoardHasElements[]> {
-    return await this.driver.select(`
+    const output = await this.driver.select(`
       SELECT T1.board_id, T1.board_name, T1.structure, T1.stencil, T1.diagram_img_path, T1.board_img_path,
         EXISTS (
           SELECT 1 FROM elements T2 WHERE T2.board_id = T1.board_id
@@ -32,6 +23,17 @@ export class BoardRepository implements IBoardRepository {
       FROM boards T1
       ORDER BY T1.board_id
       `);
+    return output.map((item: any) => this.normalizeFindAll(item));
+  }
+
+  async findById(id: number): Promise<IBoard> {
+    const output = await this.driver.select(`
+      SELECT board_id, board_name, structure, stencil, diagram_img_path, board_img_path
+      FROM boards
+      WHERE board_id = ${id}
+      ORDER BY board_id
+      `);
+    return this.normalizeFindById(output[0]);
   }
 
   async create(board: IBoardCreate): Promise<IBoard> {
@@ -56,5 +58,30 @@ export class BoardRepository implements IBoardRepository {
       WHERE board_id = ${id}
       returning *
       `);
+  }
+
+  private normalizeFindAll(input: any): IBoardHasElements {
+    const output: IBoardHasElements = {
+      boardId: input?.board_id ?? 0,
+      boardName: input?.board_name ?? '',
+      structure: input?.structure ?? '',
+      stencil: input?.stencil ?? false,
+      diagramImgPath: input?.diagram_img_path ?? '',
+      boardImgPath: input?.board_img_path ?? '',
+      hasElements: input?.has_elements ?? false,
+    };
+    return output;
+  }
+
+  private normalizeFindById(input: any): IBoard {
+    const output: IBoard = {
+      boardId: input?.board_id ?? 0,
+      boardName: input?.board_name ?? '',
+      structure: input?.structure ?? '',
+      stencil: input?.stencil ?? false,
+      diagramImgPath: input?.diagram_img_path ?? '',
+      boardImgPath: input?.board_img_path ?? '',
+    };
+    return output;
   }
 }

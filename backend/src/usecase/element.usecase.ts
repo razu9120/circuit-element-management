@@ -5,7 +5,6 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { camelCase } from 'lodash';
 import {
   IElement,
   IElementCreate,
@@ -34,8 +33,7 @@ export class ElementUseCase {
 
   async userGetElementById(elementId: number): Promise<IElement> {
     try {
-      const result = await this.elementEntity.getElementById(elementId);
-      return result;
+      return await this.elementEntity.getElementById(elementId);
     } catch (e) {
       throw new HttpException(
         {
@@ -49,15 +47,7 @@ export class ElementUseCase {
 
   async userGetElementByBoardId(boardId: number): Promise<IElementAndBoard[]> {
     try {
-      const result = await this.elementEntity.getElementByBoardId(boardId);
-
-      const camelCaseResult = result.map((board) =>
-        Object.fromEntries(
-          Object.entries(board).map(([key, value]) => [camelCase(key), value]),
-        ),
-      );
-
-      return camelCaseResult as IElementAndBoard[];
+      return await this.elementEntity.getElementByBoardId(boardId);
     } catch (e) {
       throw new HttpException(
         {

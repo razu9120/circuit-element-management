@@ -29,16 +29,7 @@ export class ProductUseCase {
 
   async userGetProducts(): Promise<IProduct[]> {
     try {
-      const result = await this.productEntity.getAllProducts();
-
-      // スネークケースをキャメルケースに変換
-      const camelCaseResult = result.map((board) =>
-        Object.fromEntries(
-          Object.entries(board).map(([key, value]) => [camelCase(key), value]),
-        ),
-      );
-
-      return camelCaseResult as IProduct[];
+      return await this.productEntity.getAllProducts();
     } catch (e) {
       throw new HttpException(
         {
@@ -52,15 +43,7 @@ export class ProductUseCase {
 
   async userGetProductById(productId: number): Promise<IProduct> {
     try {
-      const result = await this.productEntity.getProductById(productId);
-
-      const camelCaseResult: IProduct = {
-        productId: result[0].product_id,
-        productName: result[0].product_name,
-        dataSheetPath: result[0].data_sheet_path,
-      };
-
-      return camelCaseResult;
+      return await this.productEntity.getProductById(productId);
     } catch (e) {
       throw new HttpException(
         {

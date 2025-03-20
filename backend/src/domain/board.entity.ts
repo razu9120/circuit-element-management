@@ -65,7 +65,7 @@ export class BoardEntity {
     };
   }
 
-  async getAllBoards(): Promise<IBoard[]> {
+  async getAllBoards(): Promise<IBoardHasElements[]> {
     return await this.boardRepository.findAll();
   }
 

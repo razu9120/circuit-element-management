@@ -196,7 +196,6 @@ const RegistBoardClient = () => {
       // 基板データの保存
       const boardData = createBoardData({ ...data, ...fileData }, uploadResult);
       const responseData = await saveBoard(boardData);
-      console.log("responseData: ", responseData);
       const boardId: number = responseData[0]?.board_id;
 
       if (!boardId) {
