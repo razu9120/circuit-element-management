@@ -29,6 +29,7 @@ export interface IElementRepository {
   update(element: IElementCreate): Promise<IElement>;
   updateUnlinking(element: IElementCreate): Promise<IElement>;
   delete(id: number): Promise<IElement>;
+  deleteByBoardId(boardId: number): Promise<IElement>;
 }
 
 @Injectable()
@@ -92,5 +93,9 @@ export class ElementEntity {
 
   async deleteElement(id: number): Promise<IElement> {
     return await this.elementRepository.delete(id);
+  }
+
+  async deleteElementByBoardId(boardId: number): Promise<IElement> {
+    return await this.elementRepository.deleteByBoardId(boardId);
   }
 }

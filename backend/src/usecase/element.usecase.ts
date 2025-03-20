@@ -22,6 +22,7 @@ export interface IElementUseCase {
   ): Promise<IElement>;
   userUpdateElement(element: IElement): Promise<IElement>;
   userDeleteElement(elementId: number): Promise<IElement>;
+  userDeleteElementByBoardId(boardId: number): Promise<IElement>;
 }
 
 @Injectable()
@@ -164,6 +165,21 @@ export class ElementUseCase {
   async userDeleteElement(elementId: number): Promise<IElement> {
     try {
       const result = await this.elementEntity.deleteElement(elementId);
+      return result;
+    } catch (e) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Unknown error occurred',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async userDeleteElementByBoardId(boardId: number): Promise<IElement> {
+    try {
+      const result = await this.elementEntity.deleteElementByBoardId(boardId);
       return result;
     } catch (e) {
       throw new HttpException(

@@ -228,6 +228,20 @@ const updateElement = async (elementData: IElementData) => {
   }
 };
 
+const bulkDeleteElements = async (boardId: number) => {
+  const response = await fetch(
+    `http://localhost:3001/api/elements/board/${boardId}`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.messageCode || "エラーが発生しました");
+  }
+};
+
 const deleteElement = async (elementId: number) => {
   const response = await fetch(
     `http://localhost:3001/api/elements/${elementId}`,
@@ -268,6 +282,8 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const router = useRouter();
   const { setMenuId } = useMenu();
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+  const [bulkDeleteModalOpen, setBulkDeleteModalOpen] =
+    useState<boolean>(false);
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
   const [updatedBoard, setUpdatedBoard] = useState<IBoard>(board);
   const [updatedElements, setUpdatedElements] =
@@ -286,6 +302,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const [showAlert, setShowAlert] = useState(false);
   const [showModalAlert, setShowModalAlert] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [showBulkDeleteAlert, setShowBulkDeleteAlert] = useState(false);
   const {
     register,
     handleSubmit,
@@ -416,6 +433,17 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const handleDeleteModalOpen = (elementId: number) => {
     setElementId(elementId);
     setDeleteModalOpen(true);
+  };
+
+  const handleBulkDeleteElement = async () => {
+    try {
+      await bulkDeleteElements(board.boardId);
+      await fetchUpdatedElements();
+      setShowBulkDeleteAlert(true);
+      setBulkDeleteModalOpen(false);
+    } catch (error) {
+      console.error("エラーが発生しました:", error);
+    }
   };
 
   const handleDeleteElement = async () => {
@@ -575,24 +603,48 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       </form>
 
       <Alert
-        message="基板情報の更新に成功しました"
+        message="基板情報を更新しました"
         type="success"
         isVisible={showAlert}
         onClose={() => setShowAlert(false)}
       />
       <Alert
-        message="素子情報の削除に成功しました"
+        message="素子を一括削除しました"
+        type="success"
+        isVisible={showBulkDeleteAlert}
+        onClose={() => setShowBulkDeleteAlert(false)}
+      />
+      <Alert
+        message="素子を削除しました"
         type="success"
         isVisible={showDeleteAlert}
         onClose={() => setShowDeleteAlert(false)}
       />
 
       <div className="bg-base-300 rounded-box mt-9 p-3">
-        <h1 className="font-bold bg-base-300 mb-2 sticky top-0 z-5">素子</h1>
+        <div className="flex">
+          <h1 className="font-bold bg-base-300 mb-2 sticky top-0 z-5">素子</h1>
+          <Button label="追加" className="btn btn-xs btn-accent w-16 ml-6" />
+          {elementList.length > 0 && (
+            <Button
+              label="一括削除"
+              className="btn btn-xs btn-secondary ml-3"
+              onClick={() => setBulkDeleteModalOpen(true)}
+            />
+          )}
+        </div>
         <div className="h-64 md:h-72 lg:h-[465px] overflow-y-auto">
           {elementList}
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={bulkDeleteModalOpen}
+        title="素子一括削除"
+        body="本当に一括削除しますか？"
+        onConfirm={() => handleBulkDeleteElement()}
+        onCancel={() => setBulkDeleteModalOpen(false)}
+      />
 
       <ConfirmModal
         isOpen={deleteModalOpen}
@@ -669,7 +721,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
             </form>
           </div>
           <Alert
-            message="素子情報の更新に成功しました"
+            message="素子情報を更新しました"
             type="success"
             isVisible={showModalAlert}
             onClose={() => setShowModalAlert(false)}

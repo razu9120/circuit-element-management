@@ -162,7 +162,7 @@ const RegistProductClient: React.FC = () => {
       </form>
 
       <Alert
-        message="製品情報の登録に成功しました"
+        message="製品情報を登録しました"
         type="success"
         isVisible={showAlert}
         onClose={() => setShowAlert(false)}

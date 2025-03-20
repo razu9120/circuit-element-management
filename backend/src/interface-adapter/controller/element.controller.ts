@@ -55,4 +55,11 @@ export class ElementController {
   userDeleteElement(@Param('elementId') elementId: number): Promise<IElement> {
     return this.elementUseCase.userDeleteElement(elementId);
   }
+
+  @Delete('board/:boardId')
+  userDeleteElementByBoardId(
+    @Param('boardId') boardId: number,
+  ): Promise<IElement> {
+    return this.elementUseCase.userDeleteElementByBoardId(boardId);
+  }
 }

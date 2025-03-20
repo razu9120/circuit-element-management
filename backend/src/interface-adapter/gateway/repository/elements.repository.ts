@@ -65,6 +65,14 @@ export class ElementRepository implements IElementRepository {
       `);
   }
 
+  async deleteByBoardId(boardId: number): Promise<IElement> {
+    return await this.driver.delete(`
+      DELETE FROM elements
+      WHERE board_id = ${boardId}
+      returning *
+      `);
+  }
+
   private normalizeFindById(input: any): IElement {
     const output: IElement = {
       elementId: input?.element_id ?? 0,
