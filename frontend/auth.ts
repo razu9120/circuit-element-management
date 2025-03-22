@@ -19,7 +19,7 @@ const fetchUser = async (userId: number): Promise<IUser | null> => {
     const user = await apiClient.get<IUser>(`/api/users/${userId}`);
     return user;
   } catch (error) {
-    console.error("ユーザー取得エラー:", error);
+    console.error("ユーザ取得エラー:", error);
     return null;
   }
 };
