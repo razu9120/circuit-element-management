@@ -303,6 +303,9 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const [showModalAlert, setShowModalAlert] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [showBulkDeleteAlert, setShowBulkDeleteAlert] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
+  const [showAddAlert, setShowAddAlert] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -323,6 +326,22 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     handleSubmit: handleSubmitModal,
     formState: { errors: modalErrors },
     reset: resetModal,
+  } = useForm<IModalFormData>({
+    mode: "onChange",
+    defaultValues: {
+      elementId: 0,
+      reference: "",
+      content: "",
+      footprint: "",
+      productId: 0,
+    },
+  });
+
+  const {
+    register: registerAddModal,
+    handleSubmit: handleSubmitAddModal,
+    formState: { errors: addModalErrors },
+    reset: resetAddModal,
   } = useForm<IModalFormData>({
     mode: "onChange",
     defaultValues: {
@@ -467,6 +486,35 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     handleEditModalOpen,
     handleDeleteModalOpen
   );
+
+  const handleAddElement = async (data: IModalFormData) => {
+    try {
+      const elementData = {
+        boardId: board.boardId,
+        productId: selectedProductId,
+        reference: data.reference,
+        content: data.content,
+        footprint: data.footprint,
+      };
+
+      const response = await fetch("http://localhost:3001/api/elements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(elementData),
+      });
+
+      if (!response.ok) {
+        throw new Error("素子の追加に失敗しました。");
+      }
+
+      await fetchUpdatedElements();
+      setShowAddAlert(true);
+      resetAddModal();
+      setSelectedProductId(0);
+    } catch (error) {
+      console.error("エラーが発生しました:", error);
+    }
+  };
 
   return (
     <div key={formKey}>
@@ -627,6 +675,11 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
           <Button
             label="個別追加"
             className="btn btn-xs btn-accent w-24 ml-6"
+            onClick={() => {
+              setAddModalOpen(true);
+              resetAddModal();
+              setSelectedProductId(0);
+            }}
           />
           {elementList.length > 0 && (
             <Button
@@ -728,6 +781,81 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
             type="success"
             isVisible={showModalAlert}
             onClose={() => setShowModalAlert(false)}
+          />
+        </div>
+      )}
+
+      {addModalOpen && (
+        <div className="modal modal-open">
+          <div className="modal-box max-w-5xl">
+            <form
+              onSubmit={handleSubmitAddModal(handleAddElement)}
+              className="flex flex-col bg-base-300 rounded-box p-3"
+            >
+              <h2 className="font-bold text-lg">素子追加</h2>
+              <label className="block font-bold mt-3">
+                参照/名前<span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="text"
+                className={`input input-bordered mt-1 mb-3 w-full max-w-xs ${
+                  addModalErrors.reference ? "input-error" : ""
+                }`}
+                {...registerAddModal("reference", {
+                  required: "参照/名前は必須です",
+                })}
+              />
+              {addModalErrors.reference && (
+                <p className="text-error text-sm mb-3">
+                  {addModalErrors.reference.message}
+                </p>
+              )}
+
+              <label className="block font-bold">値</label>
+              <Input
+                type="text"
+                className="input input-bordered mt-1 mb-3 w-full max-w-xs"
+                {...registerAddModal("content")}
+              />
+
+              <label className="block font-bold">フットプリント</label>
+              <Input
+                type="text"
+                className="input input-bordered mt-1 mb-3 w-full max-w-xl"
+                {...registerAddModal("footprint")}
+              />
+
+              <label className="block font-bold">製品紐付</label>
+              <Select
+                options={productOptions}
+                className="select select-bordered mt-1 w-full max-w-xs"
+                value={selectedProductId}
+                onChange={(e) => setSelectedProductId(Number(e.target.value))}
+              />
+
+              <div className="flex justify-center mt-3 modal-action">
+                <Button
+                  type="button"
+                  label="戻る"
+                  className="btn btn-outline btn-secondary"
+                  onClick={() => {
+                    setAddModalOpen(false);
+                    setShowAddAlert(false);
+                  }}
+                />
+                <Button
+                  type="submit"
+                  label="追加"
+                  className="btn btn-primary ml-10 w-32"
+                />
+              </div>
+            </form>
+          </div>
+          <Alert
+            message="素子を追加しました"
+            type="success"
+            isVisible={showAddAlert}
+            onClose={() => setShowAddAlert(false)}
           />
         </div>
       )}
