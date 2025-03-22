@@ -46,7 +46,7 @@ const createElementList = (
       key={element.elementId}
       className="flex bg-base-100 rounded-box w-[1000px] md:w-full mt-2 p-3"
     >
-      {element.productName ? (
+      {element.dataSheetPath ? (
         <Button
           label="データシート"
           className="btn btn-xs btn-warning w-24 mr-5"
@@ -85,6 +85,7 @@ const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
   const [isToggled, setIsToggled] = useState(false);
 
   const displayDataSheetPdf = (dataSheetPath: string) => {
+    console.log("dataSheetPath: ", dataSheetPath);
     window.open(
       `http://localhost:3001/api/images/dataSheetPdf/${dataSheetPath.replace(
         "/uploads/dataSheetPdf/",

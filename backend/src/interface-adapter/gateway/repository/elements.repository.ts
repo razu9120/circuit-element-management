@@ -101,7 +101,7 @@ export class ElementRepository implements IElementRepository {
       footprint: input?.footprint ?? '',
       productId: input?.product_id ?? 0,
       productName: input?.product_name ?? '',
-      DataSheetPath: input?.data_sheet_path ?? '',
+      dataSheetPath: input?.data_sheet_path ?? '',
     };
     return output;
   }

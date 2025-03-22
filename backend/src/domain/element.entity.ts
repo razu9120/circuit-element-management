@@ -19,7 +19,7 @@ export interface IElementAndBoard {
   footprint: string;
   productId: number;
   productName: string;
-  DataSheetPath: string;
+  dataSheetPath: string;
 }
 
 export interface IElementRepository {
