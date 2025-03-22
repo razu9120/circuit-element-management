@@ -61,7 +61,7 @@ export class ElementUseCase {
   }
 
   async userCreateElement(elementCreate: IElementCreate): Promise<IElement> {
-    const { boardId, reference, content, footprint } = elementCreate;
+    const { boardId, productId, reference, content, footprint } = elementCreate;
 
     if (!boardId) {
       throw new BadRequestException('基板IDは必須です。');
@@ -70,6 +70,7 @@ export class ElementUseCase {
     try {
       const newElement = this.elementEntity.newElement(
         boardId,
+        productId,
         reference,
         content,
         footprint,
@@ -105,11 +106,13 @@ export class ElementUseCase {
 
         const newElement = this.elementEntity.newElement(
           boardId,
+          0,
           reference,
           content,
           footprint,
         );
-        return this.elementEntity.createElement(newElement);
+
+        return this.elementEntity.createMultipleElement(newElement);
       });
 
       const results = await Promise.all(createPromises);

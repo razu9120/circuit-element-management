@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 export interface IElementCreate {
   boardId: number;
+  productId: number;
   reference: string;
   content: string;
   footprint: string;
@@ -9,7 +10,6 @@ export interface IElementCreate {
 
 export interface IElement extends IElementCreate {
   elementId: number;
-  productId: number;
 }
 
 export interface IElementAndBoard {
@@ -25,6 +25,7 @@ export interface IElementAndBoard {
 export interface IElementRepository {
   findById(id: number): Promise<IElement>;
   findByBoardId(id: number): Promise<IElementAndBoard[]>;
+  createMultiple(element: IElementCreate): Promise<IElement>;
   create(element: IElementCreate): Promise<IElement>;
   update(element: IElementCreate): Promise<IElement>;
   updateUnlinking(element: IElementCreate): Promise<IElement>;
@@ -41,12 +42,14 @@ export class ElementEntity {
 
   newElement(
     boardId: number,
+    productId: number,
     reference: string,
     content: string,
     footprint: string,
   ): IElementCreate {
     return {
       boardId: boardId,
+      productId: productId,
       reference: reference,
       content: content,
       footprint: footprint,
@@ -77,6 +80,10 @@ export class ElementEntity {
 
   async getElementByBoardId(id: number): Promise<IElementAndBoard[]> {
     return await this.elementRepository.findByBoardId(id);
+  }
+
+  async createMultipleElement(element: IElementCreate): Promise<IElement> {
+    return await this.elementRepository.createMultiple(element);
   }
 
   async createElement(element: IElementCreate): Promise<IElement> {
