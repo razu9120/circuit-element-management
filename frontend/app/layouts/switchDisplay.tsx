@@ -3,12 +3,15 @@
 import { usePathname } from "next/navigation";
 import NavigationArea from "./navigationArea";
 
+// ヘッダー、サイドメニューを表示しない画面のパスを配列で定義
+const pathnames = ["/login", "/signup"];
+
 const SwitchDisplay: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const pathname = usePathname();
-  if (pathname === "/login") {
-    return <div>{children}</div>;
+  if (pathnames.includes(pathname)) {
+    return <>{children}</>;
   }
   return (
     <>

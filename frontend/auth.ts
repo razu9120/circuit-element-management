@@ -24,6 +24,9 @@ const fetchUser = async (userId: number): Promise<IUser | null> => {
   }
 };
 
+// 認証不要のパスを配列で定義
+const publicPaths = ["/login", "/signup"];
+
 export const config: NextAuthConfig = {
   providers: [
     Credentials({
@@ -62,9 +65,22 @@ export const config: NextAuthConfig = {
     async authorized({ auth, request }) {
       try {
         const { pathname } = request.nextUrl;
-        if (pathname !== "/login") {
-          return !!auth;
+
+        // 認証不要のパスの場合は常にtrue
+        if (publicPaths.includes(pathname)) {
+          return true;
         }
+
+        // 認証されていない場合は、loginページにリダイレクト
+        if (!auth) {
+          const returnUrl = encodeURIComponent(pathname);
+          request.nextUrl.pathname = "/login";
+          // 元のURLをクエリパラメータとして保持
+          request.nextUrl.searchParams.set("callbackUrl", returnUrl);
+          return Response.redirect(request.nextUrl);
+        }
+
+        // 認証済みの場合はtrue
         return true;
       } catch (e) {
         console.error("認証エラー:", e);

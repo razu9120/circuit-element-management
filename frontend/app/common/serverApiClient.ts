@@ -30,7 +30,7 @@ const DEFAULT_CACHE_STRATEGY: CacheStrategy = "no-store";
 const DEFAULT_REVALIDATE = 0;
 
 const BACKEND_API_BASE_URL =
-  process.env.BACKEND_API_BASE_URL || "http://localhost:8082/backend";
+  process.env.BACKEND_API_BASE_URL || "http://localhost:3001/backend";
 
 const createApiError = (
   message: string,
