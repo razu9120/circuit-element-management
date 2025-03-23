@@ -3,6 +3,7 @@ import { PostgresDriver } from 'src/infrastructure/postgres/postgres.module';
 import { ProductRepository } from './products.repository';
 import { BoardRepository } from './boards.repository';
 import { ElementRepository } from './elements.repository';
+import { UserRepository } from './users.repository';
 
 @Module({
   imports: [PostgresDriver],
@@ -19,7 +20,16 @@ import { ElementRepository } from './elements.repository';
       provide: 'IElementRepository',
       useClass: ElementRepository,
     },
+    {
+      provide: 'IUserRepository',
+      useClass: UserRepository,
+    },
   ],
-  exports: ['IProductRepository', 'IBoardRepository', 'IElementRepository'],
+  exports: [
+    'IProductRepository',
+    'IBoardRepository',
+    'IElementRepository',
+    'IUserRepository',
+  ],
 })
 export class RepositoryModule {}

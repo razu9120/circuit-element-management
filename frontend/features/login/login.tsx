@@ -9,7 +9,7 @@ import Button from "@/app/components/button";
 import Alert from "@/app/components/alert";
 
 interface IFormData {
-  userId: string;
+  loginUserId: string;
   userPass: string;
 }
 
@@ -24,7 +24,7 @@ const Login = () => {
   } = useForm<IFormData>({
     mode: "onChange",
     defaultValues: {
-      userId: "",
+      loginUserId: "",
       userPass: "",
     },
   });
@@ -35,7 +35,7 @@ const Login = () => {
       const callbackUrl = searchParams.get("callbackUrl") || "/";
 
       const result = await signIn("credentials", {
-        userId: data.userId,
+        loginUserId: data.loginUserId,
         userPass: data.userPass,
         redirect: false,
       });
@@ -70,12 +70,14 @@ const Login = () => {
           type="text"
           placeholder="ユーザIDを入力"
           className={`input input-bordered mt-1 mb-3 w-full ${
-            errors.userId ? "input-error" : ""
+            errors.loginUserId ? "input-error" : ""
           }`}
-          {...register("userId", { required: "ユーザIDは必須です" })}
+          {...register("loginUserId", { required: "ユーザIDは必須です" })}
         />
-        {errors.userId && (
-          <p className="text-error text-sm mb-3">{errors.userId.message}</p>
+        {errors.loginUserId && (
+          <p className="text-error text-sm mb-3">
+            {errors.loginUserId.message}
+          </p>
         )}
 
         <h1 className="font-bold">

@@ -15,6 +15,9 @@ import { UploadController } from './interface-adapter/controller/upload.controll
 import { ImageController } from './interface-adapter/controller/image.controller';
 import { ImageUseCase } from './usecase/image.usecase';
 import { ImageEntity } from './domain/image.entity';
+import { UserController } from './interface-adapter/controller/user.controller';
+import { UserUseCase } from './usecase/user.usecase';
+import { UserEntity } from './domain/user.entity';
 
 @Module({
   imports: [RepositoryModule],
@@ -25,6 +28,7 @@ import { ImageEntity } from './domain/image.entity';
     ElementController,
     UploadController,
     ImageController,
+    UserController,
   ],
   providers: [
     AppService,
@@ -44,10 +48,15 @@ import { ImageEntity } from './domain/image.entity';
       provide: 'IImageUseCase',
       useClass: ImageUseCase,
     },
+    {
+      provide: 'IUserUseCase',
+      useClass: UserUseCase,
+    },
     ProductEntity,
     BoardEntity,
     ElementEntity,
     ImageEntity,
+    UserEntity,
   ],
 })
 export class AppModule {}

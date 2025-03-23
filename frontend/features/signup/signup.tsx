@@ -18,8 +18,8 @@ interface IFormData {
 
 interface IRegistUser {
   loginUserId: string;
-  userPass: string;
   userName: string;
+  userPass: string;
 }
 
 const Signup = () => {

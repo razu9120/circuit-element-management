@@ -14,9 +14,9 @@ interface IUser {
 }
 
 // fetchUser関数の実装
-const fetchUser = async (userId: number): Promise<IUser | null> => {
+const fetchUser = async (loginUserId: number): Promise<IUser | null> => {
   try {
-    const user = await apiClient.get<IUser>(`/api/users/${userId}`);
+    const user = await apiClient.get<IUser>(`/api/users/${loginUserId}`);
     return user;
   } catch (error) {
     console.error("ユーザ取得エラー:", error);
@@ -31,13 +31,13 @@ export const config: NextAuthConfig = {
   providers: [
     Credentials({
       async authorize(credentials) {
-        const { userId, userPass } = credentials as {
-          userId: number;
+        const { loginUserId, userPass } = credentials as {
+          loginUserId: number;
           userPass: string;
         };
 
         try {
-          const user = await fetchUser(userId);
+          const user = await fetchUser(loginUserId);
 
           if (!user) {
             return null;
