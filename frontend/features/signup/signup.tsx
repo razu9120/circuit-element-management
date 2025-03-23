@@ -48,7 +48,7 @@ const Signup = () => {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(data.password, salt);
 
-      const response = await apiClient.post<IRegistUser>("/api/users", {
+      const response = await apiClient.post<IRegistUser>("/users", {
         loginUserId: data.userId,
         userName: data.userName,
         userPass: hashedPassword,

@@ -16,7 +16,7 @@ interface IUser {
 // fetchUser関数の実装
 const fetchUser = async (loginUserId: number): Promise<IUser | null> => {
   try {
-    const user = await apiClient.get<IUser>(`/api/users/${loginUserId}`);
+    const user = await apiClient.get<IUser>(`/users/${loginUserId}`);
     return user;
   } catch (error) {
     console.error("ユーザ取得エラー:", error);
@@ -73,10 +73,10 @@ export const config: NextAuthConfig = {
 
         // 認証されていない場合は、loginページにリダイレクト
         if (!auth) {
-          const returnUrl = encodeURIComponent(pathname);
+          //   const returnUrl = encodeURIComponent(pathname);
           request.nextUrl.pathname = "/login";
           // 元のURLをクエリパラメータとして保持
-          request.nextUrl.searchParams.set("callbackUrl", returnUrl);
+          //   request.nextUrl.searchParams.set("callbackUrl", returnUrl);
           return Response.redirect(request.nextUrl);
         }
 
@@ -105,7 +105,7 @@ export const config: NextAuthConfig = {
     },
   },
   pages: {
-    signIn: "/login", // カスタムログインページ
+    signIn: "/login",
   },
 };
 
