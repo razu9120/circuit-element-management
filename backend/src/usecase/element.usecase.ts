@@ -61,7 +61,8 @@ export class ElementUseCase {
   }
 
   async userCreateElement(elementCreate: IElementCreate): Promise<IElement> {
-    const { boardId, productId, reference, content, footprint } = elementCreate;
+    const { userId, boardId, productId, reference, content, footprint } =
+      elementCreate;
 
     if (!boardId) {
       throw new BadRequestException('基板IDは必須です。');
@@ -69,6 +70,7 @@ export class ElementUseCase {
 
     try {
       const newElement = this.elementEntity.newElement(
+        userId,
         boardId,
         productId,
         reference,
@@ -91,6 +93,7 @@ export class ElementUseCase {
 
   async userCreateMultipleElement(
     elementCreateList: IElementCreate[],
+    userId: number,
   ): Promise<IElement[]> {
     if (!elementCreateList.length) {
       throw new BadRequestException('要素リストが空です。');
@@ -98,13 +101,15 @@ export class ElementUseCase {
 
     try {
       const createPromises = elementCreateList.map((elementCreate) => {
-        const { boardId, reference, content, footprint } = elementCreate;
+        const { userId, boardId, reference, content, footprint } =
+          elementCreate;
 
-        if (!boardId) {
-          throw new BadRequestException('基板IDは必須です。');
+        if (!userId || !boardId) {
+          throw new BadRequestException('ユーザIDと基板IDは必須です。');
         }
 
         const newElement = this.elementEntity.newElement(
+          userId,
           boardId,
           0,
           reference,
@@ -129,8 +134,15 @@ export class ElementUseCase {
   }
 
   async userUpdateElement(element: IElement): Promise<IElement> {
-    const { elementId, boardId, productId, reference, content, footprint } =
-      element;
+    const {
+      elementId,
+      userId,
+      boardId,
+      productId,
+      reference,
+      content,
+      footprint,
+    } = element;
 
     if (!elementId) {
       throw new BadRequestException('Idは必須です。');
@@ -139,6 +151,7 @@ export class ElementUseCase {
     try {
       const updElement = this.elementEntity.updElement(
         elementId,
+        userId,
         boardId,
         productId,
         reference,

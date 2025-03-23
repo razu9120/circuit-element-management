@@ -2,6 +2,7 @@ import React from "react";
 import BoardDetailClient from "./boardDetailClient";
 
 export interface IBoard {
+  userId: number;
   boardId: number;
   boardName: string;
   structure: string;
@@ -12,6 +13,7 @@ export interface IBoard {
 
 export interface IElementAndBoard {
   elementId: number;
+  userId: number;
   reference: string;
   content: string;
   footprint: string;
@@ -26,7 +28,7 @@ export interface IBoardDetailProps {
 
 const fetchBoard = async (boardId: number) => {
   const response = await fetch(
-    `http://localhost:3000/backend/v1/boards/${boardId}`,
+    `http://localhost:3000/backend/v1/boards/one/${boardId}`,
     {
       cache: "no-store",
     }
@@ -55,6 +57,7 @@ const fetchElements = async (boardId: number) => {
 const BoardDetail: React.FC<IBoardDetailProps> = async ({ boardId }) => {
   try {
     const board: IBoard = await fetchBoard(boardId);
+    console.log("board: ", board);
     const elements: IElementAndBoard[] = await fetchElements(boardId);
     return <BoardDetailClient board={board} elements={elements} />;
   } catch (error) {

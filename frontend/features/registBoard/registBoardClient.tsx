@@ -9,6 +9,7 @@ import { stencilOptions, structureOptions } from "@/app/constants/options";
 import { useMenu } from "@/app/contexts/menuContext";
 import { useForm } from "react-hook-form";
 import Alert from "@/app/components/alert";
+import { useSession } from "next-auth/react";
 
 // 型定義
 interface IFormData {
@@ -21,6 +22,7 @@ interface IFormData {
 }
 
 interface IBoardData {
+  userId: number;
   boardName: string;
   structure: string;
   stencil: string;
@@ -29,6 +31,7 @@ interface IBoardData {
 }
 
 interface IElementData {
+  userId: number;
   boardId: number;
   reference: string;
   content: string;
@@ -120,8 +123,10 @@ const createFormData = (
 
 const createBoardData = (
   formData: IFormData,
-  uploadResult: IUploadResult
+  uploadResult: IUploadResult,
+  userId: number
 ): IBoardData => ({
+  userId,
   boardName: formData.boardName,
   structure: formData.structure,
   stencil: formData.stencil,
@@ -131,7 +136,11 @@ const createBoardData = (
     : "",
 });
 
-const csvToJson = (csvText: string, boardId: number): IElementData[] => {
+const csvToJson = (
+  csvText: string,
+  boardId: number,
+  userId: number
+): IElementData[] => {
   try {
     const lines = csvText.trim().split("\n");
     const rows = lines.slice(1);
@@ -142,6 +151,7 @@ const csvToJson = (csvText: string, boardId: number): IElementData[] => {
         throw new Error("CSVファイルの形式が正しくありません。");
       }
       return {
+        userId,
         boardId,
         reference: values[0],
         content: values[1],
@@ -156,6 +166,7 @@ const csvToJson = (csvText: string, boardId: number): IElementData[] => {
 const RegistBoardClient = () => {
   const router = useRouter();
   const { setMenuId } = useMenu();
+  const { data: session } = useSession();
   const [formKey, setFormKey] = useState(0);
   const [fileData, setFileData] = useState<IFileData>({
     pcbDesign: null,
@@ -186,15 +197,21 @@ const RegistBoardClient = () => {
 
   const onSubmit = async (data: IFormData) => {
     try {
-      // ファイルアップロード
+      if (!session?.user?.id) {
+        throw new Error("ユーザーIDが見つかりません");
+      }
+
       const uploadData = createFormData(
         fileData.pcbDesign,
         fileData.circuitDiagram
       );
       const uploadResult = await uploadFiles(uploadData);
 
-      // 基板データの保存
-      const boardData = createBoardData({ ...data, ...fileData }, uploadResult);
+      const boardData = createBoardData(
+        { ...data, ...fileData },
+        uploadResult,
+        Number(session.user.id)
+      );
       const responseData = await saveBoard(boardData);
       const boardId: number = responseData[0]?.board_id;
 
@@ -205,7 +222,11 @@ const RegistBoardClient = () => {
       // CSVファイルの処理
       if (fileData.csvFile) {
         const csvText = await fileData.csvFile.text();
-        const jsonElements = csvToJson(csvText, boardId);
+        const jsonElements = csvToJson(
+          csvText,
+          boardId,
+          Number(session.user.id)
+        );
         await saveElements(jsonElements);
       }
 

@@ -50,7 +50,7 @@ export const config: NextAuthConfig = {
           }
 
           return {
-            id: user.userId.toString(),
+            id: String(user.userId),
             name: user.userName,
             role: user.userRole,
           };

@@ -22,12 +22,12 @@ export class BoardController {
     private readonly boardUseCase: IBoardUseCase,
   ) {}
 
-  @Get()
-  userGetBoards(): Promise<IBoardHasElements[]> {
-    return this.boardUseCase.userGetBoards();
+  @Get(':userId')
+  userGetBoards(@Param('userId') userId: number): Promise<IBoardHasElements[]> {
+    return this.boardUseCase.userGetBoards(userId);
   }
 
-  @Get(':boardId')
+  @Get('one/:boardId')
   userGetBoardById(@Param('boardId') boardId: number): Promise<IBoard> {
     return this.boardUseCase.userGetBoardById(boardId);
   }

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 export interface IBoardCreate {
+  userId: number;
   boardName: string;
   structure: string;
   stencil: boolean;
@@ -18,7 +19,7 @@ export interface IBoardHasElements extends IBoard {
 
 export interface IBoardRepository {
   findById(id: number): Promise<IBoard>;
-  findAll(): Promise<IBoardHasElements[]>;
+  findAll(userId: number): Promise<IBoardHasElements[]>;
   create(board: IBoardCreate): Promise<IBoard>;
   update(board: IBoardCreate): Promise<IBoard>;
   delete(id: number): Promise<IBoard>;
@@ -32,6 +33,7 @@ export class BoardEntity {
   ) {}
 
   newBoard(
+    userId: number,
     boardName: string,
     structure: string,
     stencil: boolean,
@@ -39,6 +41,7 @@ export class BoardEntity {
     boardImgPath: string,
   ): IBoardCreate {
     return {
+      userId: userId,
       boardName: boardName,
       structure: structure,
       stencil: stencil,
@@ -56,6 +59,7 @@ export class BoardEntity {
     boardImgPath: string,
   ): IBoard {
     return {
+      userId: 0,
       boardId: boardId,
       boardName: boardName,
       structure: structure,
@@ -65,8 +69,8 @@ export class BoardEntity {
     };
   }
 
-  async getAllBoards(): Promise<IBoardHasElements[]> {
-    return await this.boardRepository.findAll();
+  async getAllBoards(userId: number): Promise<IBoardHasElements[]> {
+    return await this.boardRepository.findAll(userId);
   }
 
   async getBoardById(id: number): Promise<IBoard> {

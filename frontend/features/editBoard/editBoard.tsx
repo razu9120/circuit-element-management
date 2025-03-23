@@ -9,7 +9,7 @@ export interface IEditBoardProps {
 
 const fetchBoard = async (boardId: number) => {
   const response = await fetch(
-    `http://localhost:3000/backend/v1/boards/${boardId}`,
+    `http://localhost:3000/backend/v1/boards/one/${boardId}`,
     {
       cache: "no-store",
     }

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 export interface IElementCreate {
+  userId: number;
   boardId: number;
   productId: number;
   reference: string;
@@ -14,6 +15,7 @@ export interface IElement extends IElementCreate {
 
 export interface IElementAndBoard {
   elementId: number;
+  userId: number;
   reference: string;
   content: string;
   footprint: string;
@@ -41,6 +43,7 @@ export class ElementEntity {
   ) {}
 
   newElement(
+    userId: number,
     boardId: number,
     productId: number,
     reference: string,
@@ -48,6 +51,7 @@ export class ElementEntity {
     footprint: string,
   ): IElementCreate {
     return {
+      userId: userId,
       boardId: boardId,
       productId: productId,
       reference: reference,
@@ -58,6 +62,7 @@ export class ElementEntity {
 
   updElement(
     elementId: number,
+    userId: number,
     boardId: number,
     productId: number,
     reference: string,
@@ -66,6 +71,7 @@ export class ElementEntity {
   ): IElement {
     return {
       elementId: elementId,
+      userId: userId,
       boardId: boardId,
       productId: +productId,
       reference: reference,

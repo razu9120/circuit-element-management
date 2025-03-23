@@ -13,7 +13,7 @@ import {
 } from 'src/domain/board.entity';
 
 export interface IBoardUseCase {
-  userGetBoards(): Promise<IBoardHasElements[]>;
+  userGetBoards(userId: number): Promise<IBoardHasElements[]>;
   userGetBoardById(boardId: number): Promise<IBoard>;
   userCreateBoard(boardCreate: IBoardCreate): Promise<IBoard>;
   userUpdateBoard(board: IBoard): Promise<IBoard>;
@@ -27,9 +27,9 @@ export class BoardUseCase {
     private readonly boardEntity: BoardEntity,
   ) {}
 
-  async userGetBoards(): Promise<IBoardHasElements[]> {
+  async userGetBoards(userId: number): Promise<IBoardHasElements[]> {
     try {
-      return await this.boardEntity.getAllBoards();
+      return await this.boardEntity.getAllBoards(userId);
     } catch (e) {
       throw new HttpException(
         {
@@ -56,14 +56,21 @@ export class BoardUseCase {
   }
 
   async userCreateBoard(boardCreate: IBoardCreate): Promise<IBoard> {
-    const { boardName, structure, stencil, diagramImgPath, boardImgPath } =
-      boardCreate;
+    const {
+      userId,
+      boardName,
+      structure,
+      stencil,
+      diagramImgPath,
+      boardImgPath,
+    } = boardCreate;
 
-    if (!boardName || !structure || !stencil) {
+    if (!userId || !boardName || !structure || !stencil) {
       throw new BadRequestException('名前、構造、ステンシルは必須です。');
     }
     try {
       const newBoard = this.boardEntity.newBoard(
+        userId,
         boardName,
         structure,
         stencil,
