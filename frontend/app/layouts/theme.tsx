@@ -1,11 +1,34 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 const Theme = () => {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    // 初期テーマの設定
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark";
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+  };
+
   return (
     <>
       <label className="grid cursor-pointer place-items-center justify-start">
         <input
           type="checkbox"
-          value="dark"
           className="toggle theme-controller bg-base-content col-span-2 col-start-1 row-start-1"
+          checked={theme === "dark"}
+          onChange={toggleTheme}
         />
         <svg
           className="stroke-base-100 fill-base-100 col-start-1 row-start-1"

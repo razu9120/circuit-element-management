@@ -2,8 +2,12 @@
 
 import { signOut, useSession } from "next-auth/react";
 import Theme from "./theme";
+import { useSettings } from "../contexts/settingsContext";
+import Toggle from "../components/toggle";
+
 const Profile = () => {
   const { data: session } = useSession();
+  const { isLeftHanded, toggleLeftHanded } = useSettings();
 
   return (
     <>
@@ -24,13 +28,23 @@ const Profile = () => {
           className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
         >
           <li>
-            <div className="text-md font-bold">{session?.user?.name}</div>
+            <div className="text-xl font-bold">{session?.user?.name}</div>
           </li>
           <li>
             <a onClick={() => signOut()}>ログアウト</a>
           </li>
+          <div className="divider"></div>
           <li>
-            <Theme />
+            <div className="flex items-center justify-between">
+              <span>テーマ</span>
+              <Theme />
+            </div>
+          </li>
+          <li>
+            <div className="flex items-center justify-between">
+              <span>左利き設定</span>
+              <Toggle checked={isLeftHanded} onChange={toggleLeftHanded} />
+            </div>
           </li>
         </ul>
       </div>

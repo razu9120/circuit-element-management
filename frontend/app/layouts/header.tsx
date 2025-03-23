@@ -4,6 +4,7 @@ import { menu } from "../constants/menu";
 import Breadcrumbs from "./breadcrumb";
 import { useMenu } from "../contexts/menuContext";
 import Profile from "./profile";
+import { useSettings } from "../contexts/settingsContext";
 
 interface IBreadcrumbItem {
   label: string;
@@ -22,6 +23,7 @@ export interface IMenu {
 const Header = () => {
   const router = useRouter();
   const { setMenuId } = useMenu();
+  const { isLeftHanded } = useSettings();
 
   const Redirect = (route: string) => {
     router.push(route);
@@ -44,7 +46,11 @@ const Header = () => {
 
   return (
     <div>
-      <div className="navbar w-[calc(100%-40px)] md:w-full fixed border border-base-300 h-10 z-20 ml-5 mr-5 md:ml-0 md:mr-0 mb-2 bottom-0 md:top-0 md:bottom-auto rounded-box md:rounded-none bg-neutral/30 backdrop-blur-sm">
+      <div
+        className={`navbar w-[calc(100%-40px)] md:w-full fixed border border-base-300 h-10 z-20 ml-5 mr-5 md:ml-0 md:mr-0 mb-2 bottom-0 md:top-0 md:bottom-auto rounded-box md:rounded-none bg-neutral/30 backdrop-blur-sm ${
+          isLeftHanded ? "flex-row-reverse md:flex-row" : ""
+        }`}
+      >
         <div className="md:hidden">
           <Profile />
         </div>
@@ -107,7 +113,7 @@ const Header = () => {
             </div>
             <ul
               tabIndex={0}
-              className="menu menu-md dropdown-content font-bold bg-base-300/60 backdrop-blur-sm rounded-box z-30 absolute bottom-full mr-5 mb-3 w-52 p-2 right-2 shadow"
+              className={`menu menu-md dropdown-content font-bold bg-base-300/60 backdrop-blur-sm rounded-box z-30 absolute bottom-full mb-3 w-52 p-2 shadow`}
             >
               {menuList}
             </ul>
