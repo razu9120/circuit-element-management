@@ -48,7 +48,7 @@ const Profile = () => {
           </li>
           <li>
             <div className="flex items-center justify-between">
-              <span>左利き設定</span>
+              <span>左利き設定(モバイル)</span>
               <Toggle checked={isLeftHanded} onChange={toggleLeftHanded} />
             </div>
           </li>
