@@ -113,7 +113,9 @@ const Header = () => {
             </div>
             <ul
               tabIndex={0}
-              className={`menu menu-md dropdown-content font-bold bg-base-300/60 backdrop-blur-sm rounded-box z-30 absolute bottom-full mb-3 w-52 p-2 shadow`}
+              className={`menu menu-md dropdown-content font-bold bg-base-300 backdrop-blur-sm rounded-box z-30 absolute bottom-full mb-3 w-52 p-2 shadow ${
+                isLeftHanded ? "left-1" : "right-1"
+              }`}
             >
               {menuList}
             </ul>

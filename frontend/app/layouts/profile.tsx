@@ -11,7 +11,11 @@ const Profile = () => {
 
   return (
     <>
-      <div className="dropdown dropdown-end">
+      <div
+        className={`dropdown ${
+          isLeftHanded ? "max-md:dropdown-start" : "max-md:dropdown-end"
+        } dropdown-start`}
+      >
         <div
           tabIndex={0}
           role="button"
@@ -25,7 +29,9 @@ const Profile = () => {
         </div>
         <ul
           tabIndex={0}
-          className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+          className={`menu menu-sm dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow md:mt-3 md:top-full max-md:mb-3 max-md:bottom-full ${
+            isLeftHanded ? "max-md:right-0" : "max-md:left-0"
+          } md:right-0`}
         >
           <li>
             <div className="text-xl font-bold">{session?.user?.name}</div>
