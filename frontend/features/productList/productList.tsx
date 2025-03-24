@@ -2,6 +2,7 @@ import ProductListClient from "./productListClient";
 
 export interface IProduct {
   productId: number;
+  userId: number;
   productName: string;
   dataSheetPath: string;
 }

@@ -52,6 +52,7 @@ export class BoardEntity {
 
   updBoard(
     boardId: number,
+    userId: number,
     boardName: string,
     structure: string,
     stencil: boolean,
@@ -59,7 +60,7 @@ export class BoardEntity {
     boardImgPath: string,
   ): IBoard {
     return {
-      userId: 0,
+      userId: userId,
       boardId: boardId,
       boardName: boardName,
       structure: structure,

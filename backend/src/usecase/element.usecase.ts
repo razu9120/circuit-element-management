@@ -78,8 +78,14 @@ export class ElementUseCase {
         footprint,
       );
 
-      const result = await this.elementEntity.createElement(newElement);
-      return result;
+      if (newElement.productId === 0) {
+        const result =
+          await this.elementEntity.createElementUnlinking(newElement);
+        return result;
+      } else {
+        const result = await this.elementEntity.createElement(newElement);
+        return result;
+      }
     } catch (e) {
       throw new HttpException(
         {

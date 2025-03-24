@@ -13,7 +13,7 @@ import {
 } from 'src/domain/product.entity';
 
 export interface IProductUseCase {
-  userGetProducts(): Promise<IProduct[]>;
+  userGetProducts(userId: number): Promise<IProduct[]>;
   userGetProductById(productId: number): Promise<IProduct>;
   userCreateProduct(productCreate: IProductCreate): Promise<IProduct>;
   userUpdateProduct(product: IProduct): Promise<IProduct>;
@@ -27,9 +27,9 @@ export class ProductUseCase {
     private readonly productEntity: ProductEntity,
   ) {}
 
-  async userGetProducts(): Promise<IProduct[]> {
+  async userGetProducts(userId: number): Promise<IProduct[]> {
     try {
-      return await this.productEntity.getAllProducts();
+      return await this.productEntity.getAllProducts(userId);
     } catch (e) {
       throw new HttpException(
         {
@@ -56,13 +56,14 @@ export class ProductUseCase {
   }
 
   async userCreateProduct(productCreate: IProductCreate): Promise<IProduct> {
-    const { productName, dataSheetPath } = productCreate;
+    const { userId, productName, dataSheetPath } = productCreate;
 
-    if (!productName) {
-      throw new BadRequestException('製品名は必須です。');
+    if (!userId || !productName) {
+      throw new BadRequestException('userIdとproductNameは必須です。');
     }
     try {
       const newProduct = this.productEntity.newProduct(
+        userId,
         productName,
         dataSheetPath,
       );
@@ -81,15 +82,16 @@ export class ProductUseCase {
   }
 
   async userUpdateProduct(product: IProduct): Promise<IProduct> {
-    const { productId, productName, dataSheetPath } = product;
+    const { productId, userId, productName, dataSheetPath } = product;
 
-    if (!productId || !productName || !dataSheetPath) {
+    if (!productId || !userId || !productName || !dataSheetPath) {
       throw new BadRequestException('Id and Name and price are required');
     }
 
     try {
       const updProduct = this.productEntity.updProduct(
         productId,
+        userId,
         productName,
         dataSheetPath,
       );

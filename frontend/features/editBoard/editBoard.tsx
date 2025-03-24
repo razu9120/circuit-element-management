@@ -35,10 +35,13 @@ const fetchElements = async (boardId: number) => {
   return await response.json();
 };
 
-const fetchProducts = async () => {
-  const response = await fetch("http://localhost:3000/backend/v1/products", {
-    cache: "no-store",
-  });
+const fetchProducts = async (userId: number) => {
+  const response = await fetch(
+    `http://localhost:3000/backend/v1/products/${userId}`,
+    {
+      cache: "no-store",
+    }
+  );
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.messageCode || "エラーが発生しました");
@@ -50,7 +53,7 @@ const EditBoard: React.FC<IEditBoardProps> = async ({ boardId }) => {
   try {
     const board: IBoard = await fetchBoard(boardId);
     const elements: IElementAndBoard[] = await fetchElements(boardId);
-    const productList: IProduct[] = await fetchProducts();
+    const productList: IProduct[] = await fetchProducts(board.userId);
     return (
       <EditBoardClient
         board={board}

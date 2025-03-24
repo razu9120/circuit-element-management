@@ -18,12 +18,12 @@ export class ProductController {
     private readonly productUseCase: IProductUseCase,
   ) {}
 
-  @Get()
-  userGetProducts(): Promise<IProduct[]> {
-    return this.productUseCase.userGetProducts();
+  @Get(':userId')
+  userGetProducts(@Param('userId') userId: number): Promise<IProduct[]> {
+    return this.productUseCase.userGetProducts(userId);
   }
 
-  @Get(':productId')
+  @Get('one/:productId')
   userGetProductById(@Param('productId') productId: number): Promise<IProduct> {
     return this.productUseCase.userGetProductById(productId);
   }

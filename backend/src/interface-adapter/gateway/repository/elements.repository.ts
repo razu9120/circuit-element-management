@@ -43,8 +43,16 @@ export class ElementRepository implements IElementRepository {
 
   async create(element: IElementCreate): Promise<IElement> {
     return await this.driver.insert(`
-      INSERT INTO elements (board_id, product_id, reference, content, footprint, created_at, updated_at)
-      VALUES ('${element.boardId}', '${element.productId}', '${element.reference}', '${element.content}', '${element.footprint}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      INSERT INTO elements (user_id, board_id, product_id, reference, content, footprint, created_at, updated_at)
+      VALUES ('${element.userId}', '${element.boardId}', '${element.productId}', '${element.reference}', '${element.content}', '${element.footprint}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      returning *
+      `);
+  }
+
+  async createUnlinking(element: IElementCreate): Promise<IElement> {
+    return await this.driver.insert(`
+      INSERT INTO elements (user_id, board_id, reference, content, footprint, created_at, updated_at)
+      VALUES ('${element.userId}', '${element.boardId}', '${element.reference}', '${element.content}', '${element.footprint}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       returning *
       `);
   }

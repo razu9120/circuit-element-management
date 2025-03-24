@@ -36,6 +36,7 @@ export class ElementController {
 
   @Post()
   userCreateElement(@Body() elementCreate: IElementCreate): Promise<IElement> {
+    console.log('elementCreate: ', elementCreate);
     return this.elementUseCase.userCreateElement(elementCreate);
   }
 

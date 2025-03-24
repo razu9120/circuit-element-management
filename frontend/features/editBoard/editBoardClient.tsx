@@ -14,6 +14,7 @@ import Select from "@/app/components/select";
 import { IProduct } from "../productList/productList";
 import { useForm } from "react-hook-form";
 import Alert from "@/app/components/alert";
+import { useSession } from "next-auth/react";
 
 interface IEditBoardClientProps {
   board: IBoard;
@@ -57,6 +58,7 @@ interface IUploadResult {
 
 interface IBoardData {
   boardId: number;
+  userId: number;
   boardName: string;
   structure: string;
   stencil: string;
@@ -72,6 +74,7 @@ interface IDeleteData {
 
 interface IElementData {
   elementId: number;
+  userId: number;
   boardId: number;
   productId: number;
   reference: string;
@@ -81,6 +84,7 @@ interface IElementData {
 
 interface ICsvElementData {
   boardId: number;
+  userId: number;
   reference: string;
   content: string;
   footprint: string;
@@ -106,9 +110,11 @@ const createFormData = (
 const createBoardData = (
   formData: IFormData,
   uploadResult: IUploadResult,
-  updatedBoard: IBoard
+  updatedBoard: IBoard,
+  userId: number
 ): IBoardData => ({
   boardId: updatedBoard.boardId,
+  userId: userId,
   boardName: formData.boardName,
   structure: formData.structure,
   stencil: formData.stencil,
@@ -130,7 +136,11 @@ const createDeleteData = (
   diagramImgPathFlg: !!circuitDiagram,
 });
 
-const csvToJson = (csvText: string, boardId: number): ICsvElementData[] => {
+const csvToJson = (
+  csvText: string,
+  boardId: number,
+  userId: number
+): ICsvElementData[] => {
   const lines = csvText.trim().split("\n");
   const rows = lines.slice(1);
 
@@ -138,6 +148,7 @@ const csvToJson = (csvText: string, boardId: number): ICsvElementData[] => {
     const values = row.split(",").map((v) => v.replace(/"/g, "").trim());
     return {
       boardId,
+      userId,
       reference: values[0],
       content: values[1],
       footprint: values[2],
@@ -257,7 +268,9 @@ const deleteElement = async (elementId: number) => {
 };
 
 const fetchBoard = async (boardId: number): Promise<IBoard> => {
-  const response = await fetch(`http://localhost:3001/api/boards/${boardId}`);
+  const response = await fetch(
+    `http://localhost:3001/api/boards/one/${boardId}`
+  );
   if (!response.ok) {
     throw new Error("更新後のデータ取得に失敗しました。");
   }
@@ -305,6 +318,8 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const [showBulkDeleteAlert, setShowBulkDeleteAlert] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
   const [showAddAlert, setShowAddAlert] = useState(false);
+
+  const { data: session } = useSession();
 
   const {
     register,
@@ -378,13 +393,22 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       }
 
       // 基板データの更新
-      const boardData = createBoardData(data, uploadResult, updatedBoard);
+      const boardData = createBoardData(
+        data,
+        uploadResult,
+        updatedBoard,
+        Number(session?.user?.id)
+      );
       await updateBoard(boardData);
 
       // CSVファイルの処理
       if (fileData.csvFile) {
         const csvText = await fileData.csvFile.text();
-        const jsonElements = csvToJson(csvText, board.boardId);
+        const jsonElements = csvToJson(
+          csvText,
+          board.boardId,
+          Number(session?.user?.id)
+        );
         await fetch("http://localhost:3001/api/elements/multiple", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -425,6 +449,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     try {
       const elementData = {
         elementId: data.elementId,
+        userId: Number(session?.user?.id),
         boardId: board.boardId,
         productId: selectedProductId,
         reference: data.reference,
@@ -490,6 +515,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   const handleAddElement = async (data: IModalFormData) => {
     try {
       const elementData = {
+        userId: Number(session?.user?.id),
         boardId: board.boardId,
         productId: selectedProductId,
         reference: data.reference,

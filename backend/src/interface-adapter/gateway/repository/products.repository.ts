@@ -15,14 +15,14 @@ export class ProductRepository implements IProductRepository {
 
   async findById(id: number): Promise<IProduct> {
     const output = await this.driver.select(
-      `SELECT product_id, product_name, data_sheet_path FROM products WHERE product_id = ${id} ORDER BY product_id`,
+      `SELECT product_id, user_id, product_name, data_sheet_path FROM products WHERE product_id = ${id} ORDER BY product_id`,
     );
     return this.normalizeFindById(output[0]);
   }
 
-  async findAll(): Promise<IProduct[]> {
+  async findAll(userId: number): Promise<IProduct[]> {
     const output = await this.driver.select(
-      `SELECT product_id, product_name, data_sheet_path FROM products ORDER BY product_id`,
+      `SELECT product_id, user_id, product_name, data_sheet_path FROM products WHERE user_id = ${userId} ORDER BY product_id`,
     );
     return output.map((item: any) => this.normalizeFindAll(item));
   }
@@ -54,6 +54,7 @@ export class ProductRepository implements IProductRepository {
   private normalizeFindById(input: any): IProduct {
     const output: IProduct = {
       productId: input?.product_id ?? 0,
+      userId: input?.user_id ?? 0,
       productName: input?.product_name ?? '',
       dataSheetPath: input?.data_sheet_path ?? '',
     };
@@ -63,6 +64,7 @@ export class ProductRepository implements IProductRepository {
   private normalizeFindAll(input: any): IProduct {
     const output: IProduct = {
       productId: input?.product_id ?? 0,
+      userId: input?.user_id ?? 0,
       productName: input?.product_name ?? '',
       dataSheetPath: input?.data_sheet_path ?? '',
     };

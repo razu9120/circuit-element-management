@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 export interface IProductCreate {
+  userId: number;
   productName: string;
   dataSheetPath: string;
 }
@@ -11,7 +12,7 @@ export interface IProduct extends IProductCreate {
 
 export interface IProductRepository {
   findById(id: number): Promise<IProduct>;
-  findAll(): Promise<IProduct[]>;
+  findAll(userId: number): Promise<IProduct[]>;
   create(product: IProductCreate): Promise<IProduct>;
   update(product: IProduct): Promise<IProduct>;
   delete(id: number): Promise<IProduct>;
@@ -24,8 +25,13 @@ export class ProductEntity {
     private readonly productRepository: IProductRepository,
   ) {}
 
-  newProduct(productName: string, dataSheetPath: string): IProductCreate {
+  newProduct(
+    userId: number,
+    productName: string,
+    dataSheetPath: string,
+  ): IProductCreate {
     return {
+      userId: userId,
       productName: productName,
       dataSheetPath: dataSheetPath,
     };
@@ -33,18 +39,20 @@ export class ProductEntity {
 
   updProduct(
     productId: number,
+    userId: number,
     productName: string,
     dataSheetPath: string,
   ): IProduct {
     return {
       productId: productId,
+      userId: userId,
       productName: productName,
       dataSheetPath: dataSheetPath,
     };
   }
 
-  async getAllProducts(): Promise<IProduct[]> {
-    return await this.productRepository.findAll();
+  async getAllProducts(userId: number): Promise<IProduct[]> {
+    return await this.productRepository.findAll(userId);
   }
 
   async getProductById(id: number): Promise<IProduct> {

@@ -29,6 +29,7 @@ export interface IElementRepository {
   findByBoardId(id: number): Promise<IElementAndBoard[]>;
   createMultiple(element: IElementCreate): Promise<IElement>;
   create(element: IElementCreate): Promise<IElement>;
+  createUnlinking(element: IElementCreate): Promise<IElement>;
   update(element: IElementCreate): Promise<IElement>;
   updateUnlinking(element: IElementCreate): Promise<IElement>;
   delete(id: number): Promise<IElement>;
@@ -94,6 +95,10 @@ export class ElementEntity {
 
   async createElement(element: IElementCreate): Promise<IElement> {
     return await this.elementRepository.create(element);
+  }
+
+  async createElementUnlinking(element: IElementCreate): Promise<IElement> {
+    return await this.elementRepository.createUnlinking(element);
   }
 
   async updateElement(element: IElementCreate): Promise<IElement> {

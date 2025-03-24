@@ -94,6 +94,7 @@ export class BoardUseCase {
   async userUpdateBoard(board: IBoard): Promise<IBoard> {
     const {
       boardId,
+      userId,
       boardName,
       structure,
       stencil,
@@ -103,6 +104,7 @@ export class BoardUseCase {
 
     if (
       !boardId ||
+      !userId ||
       !structure ||
       !stencil ||
       !diagramImgPath ||
@@ -114,6 +116,7 @@ export class BoardUseCase {
     try {
       const updBoard = this.boardEntity.updBoard(
         boardId,
+        userId,
         boardName,
         structure,
         stencil,
