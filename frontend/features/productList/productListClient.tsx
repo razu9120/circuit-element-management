@@ -8,6 +8,7 @@ import { IProduct } from "./productList";
 import Input from "@/app/components/input";
 import { useForm } from "react-hook-form";
 import Alert from "@/app/components/alert";
+import { useSession } from "next-auth/react";
 
 // 型定義
 interface IProductListClientProps {
@@ -20,6 +21,7 @@ interface IFormData {
 
 interface IProductData {
   productId: number;
+  userId: number;
   productName: string;
   dataSheetPath: string;
 }
@@ -122,7 +124,7 @@ const updateProduct = async (productData: IProductData): Promise<void> => {
 
 const fetchProduct = async (productId: number): Promise<IProduct> => {
   const response = await fetch(
-    `http://localhost:3001/api/products/${productId}`
+    `http://localhost:3001/api/products/one/${productId}`
   );
   if (!response.ok) {
     const errorData = await response.json();
@@ -131,8 +133,8 @@ const fetchProduct = async (productId: number): Promise<IProduct> => {
   return response.json();
 };
 
-const fetchProducts = async (): Promise<IProduct[]> => {
-  const response = await fetch("http://localhost:3001/api/products");
+const fetchProducts = async (userId: number): Promise<IProduct[]> => {
+  const response = await fetch(`http://localhost:3001/api/products/${userId}`);
   if (!response.ok) {
     throw new Error("製品リストの取得に失敗しました。");
   }
@@ -155,6 +157,7 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
   const [dataSheetPdf, setDataSheetPdf] = useState<File | null>(null);
   const [product, setProduct] = useState<IProduct>({
     productId: 0,
+    userId: 0,
     productName: "",
     dataSheetPath: "",
   });
@@ -171,6 +174,8 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
   } = useForm<IFormData>({
     mode: "onChange",
   });
+
+  const { data: session } = useSession();
 
   const handleFileChange = (files: FileList | null) => {
     const file = files?.[0] || null;
@@ -192,6 +197,7 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
         // DBを更新するデータを作成
         const productData: IProductData = {
           productId: product.productId,
+          userId: Number(session?.user?.id),
           productName: data.productName,
           dataSheetPath: uploadResult.dataSheetPdf
             ? uploadResult.dataSheetPdf.path
@@ -204,6 +210,7 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
         // ファイルなしで更新
         const productData: IProductData = {
           productId: product.productId,
+          userId: Number(session?.user?.id),
           productName: data.productName,
           dataSheetPath: product.dataSheetPath,
         };
@@ -213,7 +220,7 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
 
       // データの更新
       await fetchUpdatedProduct(product.productId);
-      await fetchUpdatedProducts();
+      await fetchUpdatedProducts(Number(session?.user?.id));
       setShowAlert(true);
       // reset();
     } catch (error) {
@@ -251,9 +258,9 @@ const ProductListClient: React.FC<IProductListClientProps> = ({
     }
   };
 
-  const fetchUpdatedProducts = async () => {
+  const fetchUpdatedProducts = async (userId: number) => {
     try {
-      const newProducts = await fetchProducts();
+      const newProducts = await fetchProducts(userId);
       setUpdatedProductList(newProducts);
     } catch (error) {
       console.error("製品リストの更新に失敗しました:", error);

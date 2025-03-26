@@ -29,8 +29,8 @@ export class ProductRepository implements IProductRepository {
 
   async create(product: IProductCreate): Promise<IProduct> {
     return await this.driver.insert(`
-      INSERT INTO products (product_name, data_sheet_path, created_at, updated_at)
-      VALUES ('${product.productName}', '${product.dataSheetPath}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      INSERT INTO products (user_id, product_name, data_sheet_path, created_at, updated_at)
+      VALUES ('${product.userId}', '${product.productName}', '${product.dataSheetPath}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       returning *
       `);
   }

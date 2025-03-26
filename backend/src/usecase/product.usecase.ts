@@ -84,7 +84,7 @@ export class ProductUseCase {
   async userUpdateProduct(product: IProduct): Promise<IProduct> {
     const { productId, userId, productName, dataSheetPath } = product;
 
-    if (!productId || !userId || !productName || !dataSheetPath) {
+    if (!productId || !userId || !productName) {
       throw new BadRequestException('Id and Name and price are required');
     }
 

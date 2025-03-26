@@ -7,6 +7,7 @@ import { useMenu } from "@/app/contexts/menuContext";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Alert from "@/app/components/alert";
+import { useSession } from "next-auth/react";
 
 // 型定義
 interface IFormData {
@@ -14,6 +15,7 @@ interface IFormData {
 }
 
 interface IProductData {
+  userId: number;
   productName: string;
   dataSheetPath: string;
 }
@@ -67,6 +69,8 @@ const RegistProductClient: React.FC = () => {
     },
   });
 
+  const { data: session } = useSession();
+
   const handleFileChange = (files: FileList | null) => {
     const file = files?.[0] || null;
     setDataSheetPdf(file);
@@ -82,6 +86,7 @@ const RegistProductClient: React.FC = () => {
 
         // DBに登録するデータを作成
         const productData: IProductData = {
+          userId: Number(session?.user?.id),
           productName: data.productName,
           dataSheetPath: uploadResult.dataSheetPdf?.path || "",
         };
@@ -91,6 +96,7 @@ const RegistProductClient: React.FC = () => {
       } else {
         // ファイルなしで製品データを登録
         const productData: IProductData = {
+          userId: Number(session?.user?.id),
           productName: data.productName,
           dataSheetPath: "",
         };

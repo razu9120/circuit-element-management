@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import ProductListClient from "./productListClient";
 
 export interface IProduct {
@@ -7,10 +8,13 @@ export interface IProduct {
   dataSheetPath: string;
 }
 
-const fetchProducts = async () => {
-  const response = await fetch("http://localhost:3000/backend/v1/products", {
-    cache: "no-store",
-  });
+const fetchProducts = async (userId: number) => {
+  const response = await fetch(
+    `http://localhost:3000/backend/v1/products/${userId}`,
+    {
+      cache: "no-store",
+    }
+  );
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.messageCode || "エラーが発生しました");
@@ -20,7 +24,10 @@ const fetchProducts = async () => {
 
 const ProductList = async () => {
   try {
-    const productList: IProduct[] = await fetchProducts();
+    const session = await auth();
+    const productList: IProduct[] = await fetchProducts(
+      Number(session?.user?.id)
+    );
     return <ProductListClient productList={productList} />;
   } catch (error) {
     console.log(error);
