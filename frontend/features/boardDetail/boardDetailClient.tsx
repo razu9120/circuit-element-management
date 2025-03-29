@@ -85,7 +85,6 @@ const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
   const [isToggled, setIsToggled] = useState(false);
 
   const displayDataSheetPdf = (dataSheetPath: string) => {
-    console.log("dataSheetPath: ", dataSheetPath);
     window.open(
       `http://localhost:3001/api/images/dataSheetPdf/${dataSheetPath.replace(
         "/uploads/dataSheetPdf/",

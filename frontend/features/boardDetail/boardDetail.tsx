@@ -57,7 +57,6 @@ const fetchElements = async (boardId: number) => {
 const BoardDetail: React.FC<IBoardDetailProps> = async ({ boardId }) => {
   try {
     const board: IBoard = await fetchBoard(boardId);
-    console.log("board: ", board);
     const elements: IElementAndBoard[] = await fetchElements(boardId);
     return <BoardDetailClient board={board} elements={elements} />;
   } catch (error) {
