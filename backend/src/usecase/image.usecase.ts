@@ -31,22 +31,14 @@ export class ImageUseCase {
   ) {}
 
   async userDeleteImage(deleteData: IDeleteImage): Promise<IImage> {
-    if (
-      !deleteData.boardId ||
-      !deleteData.diagramImgPathFlg ||
-      !deleteData.boardImgPathFlg
-    ) {
-      throw new BadRequestException('Idと画像情報は必須です。');
+    if (!deleteData.boardId) {
+      throw new BadRequestException('Idは必須です。');
     }
 
     try {
-      const getResult = await this.boardEntity.getBoardById(deleteData.boardId);
-
-      const camelCaseGetResult: IImage = {
-        boardId: getResult[0].board_id,
-        diagramImgPath: getResult[0].diagram_img_path,
-        boardImgPath: getResult[0].board_img_path,
-      };
+      const getResult: IImage = await this.boardEntity.getBoardById(
+        deleteData.boardId,
+      );
 
       const deleteFile = async (filePath: string) => {
         if (filePath) {
@@ -60,15 +52,15 @@ export class ImageUseCase {
         }
       };
 
-      if (deleteData.diagramImgPathFlg && camelCaseGetResult.diagramImgPath) {
-        await deleteFile(camelCaseGetResult.diagramImgPath);
+      if (deleteData.diagramImgPathFlg && getResult.diagramImgPath) {
+        await deleteFile(getResult.diagramImgPath);
       }
 
-      if (deleteData.boardImgPathFlg && camelCaseGetResult.boardImgPath) {
-        await deleteFile(camelCaseGetResult.boardImgPath);
+      if (deleteData.boardImgPathFlg && getResult.boardImgPath) {
+        await deleteFile(getResult.boardImgPath);
       }
 
-      return { ...camelCaseGetResult };
+      return { ...getResult };
     } catch (e) {
       throw new HttpException(
         {
@@ -86,14 +78,9 @@ export class ImageUseCase {
     }
 
     try {
-      const getResult = await this.productEntity.getProductById(
+      const getResult: IPdf = await this.productEntity.getProductById(
         deleteData.productId,
       );
-
-      const camelCaseGetResult: IPdf = {
-        productId: getResult[0].product_id,
-        dataSheetPath: getResult[0].data_sheet_path,
-      };
 
       const deleteFile = async (filePath: string) => {
         if (filePath) {
@@ -107,11 +94,11 @@ export class ImageUseCase {
         }
       };
 
-      if (camelCaseGetResult.dataSheetPath) {
-        await deleteFile(camelCaseGetResult.dataSheetPath);
+      if (getResult.dataSheetPath) {
+        await deleteFile(getResult.dataSheetPath);
       }
 
-      return { ...camelCaseGetResult };
+      return { ...getResult };
     } catch (e) {
       throw new HttpException(
         {

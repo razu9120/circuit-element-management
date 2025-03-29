@@ -47,7 +47,7 @@ const Header = () => {
   return (
     <div>
       <div
-        className={`navbar w-[calc(100%-40px)] md:w-full fixed h-10 z-20 ml-5 mr-5 md:ml-0 md:mr-0 mb-2 bottom-0 md:top-0 md:bottom-auto rounded-box md:rounded-none bg-neutral/30 backdrop-blur-sm ${
+        className={`navbar w-[calc(100%-40px)] md:w-full fixed h-10 z-20 ml-5 mr-5 md:ml-0 md:mr-0 mb-2 bottom-0 md:top-0 md:bottom-auto border border-base-300 rounded-box md:rounded-none bg-base-300/50 backdrop-blur-sm ${
           isLeftHanded ? "flex-row-reverse md:flex-row" : ""
         }`}
       >
@@ -113,7 +113,7 @@ const Header = () => {
             </div>
             <ul
               tabIndex={0}
-              className={`menu menu-md dropdown-content font-bold bg-base-300 backdrop-blur-sm rounded-box z-30 absolute bottom-full mb-3 w-52 p-2 shadow ${
+              className={`menu menu-md dropdown-content font-bold bg-base-200 backdrop-blur-sm rounded-box z-30 absolute bottom-full mb-3 w-52 p-2 shadow ${
                 isLeftHanded ? "left-1" : "right-1"
               }`}
             >
