@@ -15,6 +15,7 @@ import { IProduct } from "../productList/productList";
 import { useForm } from "react-hook-form";
 import Alert from "@/app/components/alert";
 import { useSession } from "next-auth/react";
+import HamburgerButton from "@/app/components/hamburgerButton";
 
 interface IEditBoardClientProps {
   board: IBoard;
@@ -156,137 +157,6 @@ const csvToJson = (
   });
 };
 
-const createElementList = (
-  elements: IElementAndBoard[],
-  onEdit: (element: IElementAndBoard) => void,
-  onDelete: (elementId: number) => void
-) => {
-  return elements.map((element) => (
-    <div
-      key={element.elementId}
-      className="flex bg-base-100 rounded-box w-[1000px] md:w-full mt-2 p-3"
-    >
-      <Button
-        label="編集"
-        className="btn btn-xs btn-accent w-16 mr-3"
-        onClick={() => onEdit(element)}
-      />
-      <Button
-        label="削除"
-        className="btn btn-xs btn-secondary w-12 mr-5"
-        onClick={() => onDelete(element.elementId)}
-      />
-      {element.productName && (
-        <h1 className="font-bold text-warning">{element.productName}</h1>
-      )}
-      <h1 className={`font-bold ${element.productName ? "ml-5" : ""}`}>
-        {element.reference}
-      </h1>
-      <h1 className="font-bold ml-5">{element.content}</h1>
-      <h1 className="font-bold ml-5">{element.footprint}</h1>
-    </div>
-  ));
-};
-
-const uploadFiles = async (uploadData: FormData): Promise<IUploadResult> => {
-  const response = await fetch("http://localhost:3001/api/upload", {
-    method: "POST",
-    body: uploadData,
-  });
-
-  if (!response.ok) {
-    throw new Error("ファイルのアップロードに失敗しました。");
-  }
-
-  return response.json();
-};
-
-const deleteFiles = async (deleteData: IDeleteData) => {
-  const response = await fetch("http://localhost:3001/api/images", {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(deleteData),
-  });
-
-  if (!response.ok) {
-    throw new Error("ファイルの削除に失敗しました。");
-  }
-};
-
-const updateBoard = async (boardData: IBoardData) => {
-  const response = await fetch("http://localhost:3001/api/boards", {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(boardData),
-  });
-
-  if (!response.ok) {
-    throw new Error("DB更新に失敗しました。");
-  }
-
-  return response.json();
-};
-
-const updateElement = async (elementData: IElementData) => {
-  const response = await fetch("http://localhost:3001/api/elements", {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(elementData),
-  });
-
-  if (!response.ok) {
-    throw new Error("DB更新に失敗しました。");
-  }
-};
-
-const bulkDeleteElements = async (boardId: number) => {
-  const response = await fetch(
-    `http://localhost:3001/api/elements/board/${boardId}`,
-    {
-      method: "DELETE",
-    }
-  );
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.messageCode || "エラーが発生しました");
-  }
-};
-
-const deleteElement = async (elementId: number) => {
-  const response = await fetch(
-    `http://localhost:3001/api/elements/${elementId}`,
-    {
-      method: "DELETE",
-    }
-  );
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.messageCode || "エラーが発生しました");
-  }
-};
-
-const fetchBoard = async (boardId: number): Promise<IBoard> => {
-  const response = await fetch(
-    `http://localhost:3001/api/boards/one/${boardId}`
-  );
-  if (!response.ok) {
-    throw new Error("更新後のデータ取得に失敗しました。");
-  }
-  return response.json();
-};
-
-const fetchElements = async (boardId: number): Promise<IElementAndBoard[]> => {
-  const response = await fetch(
-    `http://localhost:3001/api/elements/board/${boardId}`
-  );
-  if (!response.ok) {
-    throw new Error("素子データの取得に失敗しました。");
-  }
-  return response.json();
-};
-
 const EditBoardClient: React.FC<IEditBoardClientProps> = ({
   board,
   elements,
@@ -367,6 +237,17 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       productId: 0,
     },
   });
+
+  const [expandedElements, setExpandedElements] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  const handleToggle = (elementId: string) => (isOpen: boolean) => {
+    setExpandedElements((prev) => ({
+      ...prev,
+      [elementId]: isOpen,
+    }));
+  };
 
   const handleFileChange = (field: keyof IFileData, files: FileList | null) => {
     const file = files?.[0] || null;
@@ -506,11 +387,172 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
     router.push(route);
   };
 
-  const elementList = createElementList(
-    updatedElements,
-    handleEditModalOpen,
-    handleDeleteModalOpen
-  );
+  const elementList = updatedElements.map((element) => (
+    <div
+      key={element.elementId}
+      className="flex flex-col bg-base-100 rounded-box w-[1000px] md:w-full mt-2 p-3"
+    >
+      <div className="flex">
+        <HamburgerButton onToggle={handleToggle(String(element.elementId))} />
+        {!expandedElements[element.elementId] ? (
+          <>
+            <Button
+              label="編集"
+              className="btn btn-xs btn-accent w-16 mr-3 ml-3"
+              onClick={() => handleEditModalOpen(element)}
+            />
+            <Button
+              label="削除"
+              className="btn btn-xs btn-secondary w-12 mr-5"
+              onClick={() => handleDeleteModalOpen(element.elementId)}
+            />
+            {element.productName && (
+              <h1 className="font-bold text-accent">{element.productName}</h1>
+            )}
+            <h1 className={`font-bold ${element.productName ? "ml-5" : ""}`}>
+              {element.reference}
+            </h1>
+            <h1 className="font-bold ml-5">{element.content}</h1>
+            <h1 className="font-bold ml-5">{element.footprint}</h1>
+          </>
+        ) : (
+          <div className="flex flex-col ml-3 w-full">
+            <div className="flex mb-3">
+              <Button
+                label="編集"
+                className="btn btn-xs btn-accent w-16 mr-3"
+                onClick={() => handleEditModalOpen(element)}
+              />
+              <Button
+                label="削除"
+                className="btn btn-xs btn-secondary w-12"
+                onClick={() => handleDeleteModalOpen(element.elementId)}
+              />
+            </div>
+            <div className="flex items-center mb-2">
+              <span className="font-bold text-accent w-32">製品名</span>
+              <span className="font-bold text-accent">
+                : {element.productName || "未設定"}
+              </span>
+            </div>
+            <div className="flex items-center mb-2">
+              <span className="font-bold w-32">参照/名前</span>
+              <span className="font-bold">: {element.reference}</span>
+            </div>
+            <div className="flex items-center mb-2">
+              <span className="font-bold w-32">値</span>
+              <span className="font-bold">: {element.content}</span>
+            </div>
+            <div className="flex items-center">
+              <span className="font-bold w-32">フットプリント</span>
+              <span className="font-bold">: {element.footprint}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  ));
+
+  const uploadFiles = async (uploadData: FormData): Promise<IUploadResult> => {
+    const response = await fetch("http://localhost:3001/api/upload", {
+      method: "POST",
+      body: uploadData,
+    });
+
+    if (!response.ok) {
+      throw new Error("ファイルのアップロードに失敗しました。");
+    }
+
+    return response.json();
+  };
+
+  const deleteFiles = async (deleteData: IDeleteData) => {
+    const response = await fetch("http://localhost:3001/api/images", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(deleteData),
+    });
+
+    if (!response.ok) {
+      throw new Error("ファイルの削除に失敗しました。");
+    }
+  };
+
+  const updateBoard = async (boardData: IBoardData) => {
+    const response = await fetch("http://localhost:3001/api/boards", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(boardData),
+    });
+
+    if (!response.ok) {
+      throw new Error("DB更新に失敗しました。");
+    }
+
+    return response.json();
+  };
+
+  const updateElement = async (elementData: IElementData) => {
+    const response = await fetch("http://localhost:3001/api/elements", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(elementData),
+    });
+
+    if (!response.ok) {
+      throw new Error("DB更新に失敗しました。");
+    }
+  };
+
+  const bulkDeleteElements = async (boardId: number) => {
+    const response = await fetch(
+      `http://localhost:3001/api/elements/board/${boardId}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.messageCode || "エラーが発生しました");
+    }
+  };
+
+  const deleteElement = async (elementId: number) => {
+    const response = await fetch(
+      `http://localhost:3001/api/elements/${elementId}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.messageCode || "エラーが発生しました");
+    }
+  };
+
+  const fetchBoard = async (boardId: number): Promise<IBoard> => {
+    const response = await fetch(
+      `http://localhost:3001/api/boards/one/${boardId}`
+    );
+    if (!response.ok) {
+      throw new Error("更新後のデータ取得に失敗しました。");
+    }
+    return response.json();
+  };
+
+  const fetchElements = async (
+    boardId: number
+  ): Promise<IElementAndBoard[]> => {
+    const response = await fetch(
+      `http://localhost:3001/api/elements/board/${boardId}`
+    );
+    if (!response.ok) {
+      throw new Error("素子データの取得に失敗しました。");
+    }
+    return response.json();
+  };
 
   const handleAddElement = async (data: IModalFormData) => {
     try {
@@ -537,6 +579,7 @@ const EditBoardClient: React.FC<IEditBoardClientProps> = ({
       setShowAddAlert(true);
       resetAddModal();
       setSelectedProductId(0);
+      setAddModalOpen(false);
     } catch (error) {
       console.error("エラーが発生しました:", error);
     }

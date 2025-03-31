@@ -9,6 +9,7 @@ import Toggle from "@/app/components/toggle";
 import { useMenu } from "@/app/contexts/menuContext";
 import { stencilOptions, structureOptions } from "@/app/constants/options";
 import { IBoard, IElementAndBoard } from "./boardDetail";
+import HamburgerButton from "@/app/components/hamburgerButton";
 
 // 型定義
 interface IImageProps {
@@ -37,40 +38,6 @@ const createImageProps = (
   className,
 });
 
-const createElementList = (
-  elements: IElementAndBoard[],
-  onDataSheetClick: (path: string) => void
-) => {
-  return elements.map((element) => (
-    <div
-      key={element.elementId}
-      className="flex bg-base-100 rounded-box w-[1000px] md:w-full mt-2 p-3"
-    >
-      {element.dataSheetPath ? (
-        <Button
-          label="データシート"
-          className="btn btn-xs btn-warning w-24 mr-5"
-          onClick={() => onDataSheetClick(element.dataSheetPath)}
-        />
-      ) : (
-        <Button
-          label="データシート"
-          className="btn btn-xs btn-warning w-24 mr-5"
-          disabled
-        />
-      )}
-      {element.productName && (
-        <h1 className="font-bold text-warning">{element.productName}</h1>
-      )}
-      <h1 className={`font-bold ${element.productName ? "ml-5" : ""}`}>
-        {element.reference}
-      </h1>
-      <h1 className="font-bold ml-5">{element.content}</h1>
-      <h1 className="font-bold ml-5">{element.footprint}</h1>
-    </div>
-  ));
-};
-
 interface IBoardDetailClientProps {
   board: IBoard;
   elements: IElementAndBoard[];
@@ -83,6 +50,86 @@ const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
   const router = useRouter();
   const { setMenuId } = useMenu();
   const [isToggled, setIsToggled] = useState(false);
+  const [expandedElements, setExpandedElements] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  const handleToggle = (elementId: string) => (isOpen: boolean) => {
+    setExpandedElements((prev) => ({
+      ...prev,
+      [elementId]: isOpen,
+    }));
+  };
+
+  const elementList = elements.map((element) => (
+    <div
+      key={element.elementId}
+      className="flex flex-col bg-base-100 rounded-box w-[1000px] md:w-full mt-2 p-3"
+    >
+      <div className="flex">
+        <HamburgerButton onToggle={handleToggle(String(element.elementId))} />
+        {!expandedElements[element.elementId] ? (
+          <>
+            {element.dataSheetPath ? (
+              <Button
+                label="データシート"
+                className="btn btn-xs btn-warning w-24 mr-5 ml-3"
+                onClick={() => displayDataSheetPdf(element.dataSheetPath)}
+              />
+            ) : (
+              <Button
+                label="データシート"
+                className="btn btn-xs btn-warning w-24 mr-5 ml-3"
+                disabled
+              />
+            )}
+            {element.productName && (
+              <h1 className="font-bold text-accent">{element.productName}</h1>
+            )}
+            <h1 className={`font-bold ${element.productName ? "ml-5" : ""}`}>
+              {element.reference}
+            </h1>
+            <h1 className="font-bold ml-5">{element.content}</h1>
+            <h1 className="font-bold ml-5">{element.footprint}</h1>
+          </>
+        ) : (
+          <div className="flex flex-col ml-3 w-full">
+            {element.dataSheetPath ? (
+              <Button
+                label="データシート"
+                className="btn btn-xs btn-warning w-24 mr-5"
+                onClick={() => displayDataSheetPdf(element.dataSheetPath)}
+              />
+            ) : (
+              <Button
+                label="データシート"
+                className="btn btn-xs btn-warning w-24 mr-5"
+                disabled
+              />
+            )}
+            <div className="flex items-center mt-3 mb-2">
+              <span className="font-bold text-accent w-32">製品名</span>
+              <span className="font-bold text-accent">
+                : {element.productName || "未設定"}
+              </span>
+            </div>
+            <div className="flex items-center mb-2">
+              <span className="font-bold w-32">参照/名前</span>
+              <span className="font-bold">: {element.reference}</span>
+            </div>
+            <div className="flex items-center mb-2">
+              <span className="font-bold w-32">値</span>
+              <span className="font-bold">: {element.content}</span>
+            </div>
+            <div className="flex items-center">
+              <span className="font-bold w-32">フットプリント</span>
+              <span className="font-bold">: {element.footprint}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  ));
 
   const displayDataSheetPdf = (dataSheetPath: string) => {
     window.open(
@@ -99,8 +146,6 @@ const BoardDetailClient: React.FC<IBoardDetailClientProps> = ({
     setMenuId(menuId);
     router.push(route);
   };
-
-  const elementList = createElementList(elements, displayDataSheetPdf);
 
   const renderImages = (className: string) => (
     <div className="flex flex-col md:flex-row gap-3">
